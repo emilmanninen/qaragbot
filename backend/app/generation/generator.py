@@ -25,7 +25,7 @@ quota, just a different (paid, after credits) way to hit the same wall.
 
 import os
 from abc import ABC, abstractmethod
-
+from backend.app.retrieval.retriever import retrieve
 
 class LLMClient(ABC):
     @abstractmethod
@@ -82,3 +82,44 @@ def get_llm(name: str | None = None) -> LLMClient:
         return AnthropicLLM()
     else:
         raise ValueError(f"Unknown LLM_PROVIDER: {name!r} (expected 'gemini' or 'anthropic')")
+
+
+SYSTEM_INSTRUCTION = """\
+You answer questions using ONLY the numbered source excerpts provided below.
+Do not use any outside knowledge, even if you know the answer independently.
+
+Rules:
+- Cite every factual claim using the bracket number(s) of the source(s) it came from, e.g. [1] or [1][2].
+- If the provided excerpts do not contain enough information to answer, say so clearly in Finnish
+  (e.g. "En löytänyt tähän vastausta annetuista lähteistä.") rather than guessing.
+- Answer in Finnish, regardless of what language the question was asked in.
+- Excerpts may start or end mid-sentence (they are fixed-length chunks) -- use the content anyway,
+  don't comment on the truncation itself.
+"""
+
+
+def build_prompt(query: str, chunks) -> tuple[str, list[dict]]:
+    """
+    Returns (prompt_text, sources) where sources[i] corresponds to citation [i+1]
+    so callers can build a lookup table after generation.
+    """
+    sources = []
+    context_blocks = []
+    for i, row in enumerate(chunks, start=1):
+        chunk_text, title, source_url, distance = row
+        sources.append({"title": title, "source_url": source_url, "distance": distance})
+        context_blocks.append(f"[{i}] (source: {title})\n{chunk_text.strip()}")
+
+    context = "\n\n".join(context_blocks)
+    prompt = f"{context}\n\n---\n\nKysymys: {query}"
+    return prompt, sources
+
+
+def generate_answer(query: str, k: int = 5):
+    chunks = retrieve(query, k)
+    prompt, sources = build_prompt(query, chunks)
+
+    llm = get_llm()
+    answer = llm.generate(prompt, SYSTEM_INSTRUCTION, temperature=0.1)
+
+    return answer, sources

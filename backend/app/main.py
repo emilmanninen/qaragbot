@@ -1,11 +1,12 @@
 import os
 import psycopg
+from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
 
-# Loads variables from the .env file two directories up (rag-docqa/.env)
-# so the same file that configures Docker Compose also configures the app.
-load_dotenv(dotenv_path="../.env")
+
+load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
 app = FastAPI()
 
@@ -23,3 +24,21 @@ def health_check():
     except psycopg.OperationalError as e:
         raise HTTPException(status_code=503, detail=f"Database unreachable: {e}")
     return {"status": "ok", "db": "connected"}
+
+class QueryRequest(BaseModel):
+    question: str = Field(min_length=1)
+
+class Citation(BaseModel):
+    source_url: str
+    snippet: str
+
+class QueryResponse(BaseModel):
+    answer: str
+    citations: dict[str, Citation]
+
+@app.post("/query", response_model=QueryResponse)
+def query(request: QueryRequest) -> QueryResponse:
+    return QueryResponse(
+        answer="placeholder",
+        citations={}
+    )
