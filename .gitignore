@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Env secrets
+.env
+
+# Node (for later, frontend step)
+node_modules/
+.next/
+
+# OS/editor cruft
+.DS_Store
