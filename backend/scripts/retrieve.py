@@ -28,7 +28,7 @@ from backend.app.embeddings.embedder import MODEL_NAME, embed_texts
 CHUNKING_STRATEGY = "fixed_v1"  # matches the default in Chunk.chunking_strategy
 
 # Known-answer sanity check — pick something you can verify by reading the source doc yourself.
-QUERY = "Mikä on vuosituloraja vuonna 2025, jos nostan opintotukea 9 kuukautta?"
+QUERY = "Kuinka paljon opintolainahyvitystä voin saada valmistumisen jälkeen?"
 TOP_K = 5
 
 
