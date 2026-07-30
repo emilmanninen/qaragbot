@@ -1,4 +1,21 @@
 import type { Message } from "@/lib/types";
+import { CitationBadge } from "@/components/citation-badge";
+
+// Splits on "[1]"-style markers, keeping them in the array, so each can be
+// swapped for a CitationBadge while everything else stays plain text.
+function renderContent(content: string, citations?: Message["citations"]) {
+  if (!citations) return content;
+
+  return content.split(/(\[\d+\])/g).map((part, i) => {
+    const match = part.match(/^\[(\d+)\]$/);
+    const citation = match && citations[match[1]];
+    return citation ? (
+      <CitationBadge key={i} index={Number(match[1])} citation={citation} />
+    ) : (
+      part
+    );
+  });
+}
 
 export function MessageBubble({ message }: { message: Message }) {
   const isUser = message.role === "user";
@@ -12,7 +29,7 @@ export function MessageBubble({ message }: { message: Message }) {
             : "bg-muted text-foreground"
         }`}
       >
-        {message.content}
+        {renderContent(message.content, message.citations)}
       </div>
     </div>
   );
