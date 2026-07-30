@@ -52,17 +52,34 @@ parsing on the frontend, not a markdown-link renderer.
 
 ## Frontend (Step 6, in progress)
 
-Building with Claude Code now. Conventions to follow:
+Built with Claude Code. Working end-to-end against the real backend:
 
-- Component split: `chat-input`, `message-list`, `message-bubble`,
-  `citation-badge` (shadcn Badge + Popover — **not** HoverCard, no hover on touch),
-  `loading-indicator`, `error-banner` (error and loading are separate components,
-  not branches of one component).
+- `chat-input`, `message-list`, `message-bubble`, `citation-badge` — all built.
+  `citation-badge` is shadcn Badge + Popover (**not** HoverCard, no hover on
+  touch), composed via base-ui's `render` prop chained two levels deep
+  (`PopoverTrigger` renders as `Badge`, `Badge` renders as a real `<button>`) —
+  needed for base-ui's native-button a11y requirement, not decorative.
+- `message-bubble` parses `[1]`/`[2]` markers out of answer text via regex and
+  swaps matched ones for `citation-badge`; an unmatched number (cited but not in
+  the `citations` dict) falls back to literal text rather than erroring.
+- `chat-input`: Enter submits (`form.requestSubmit()`), Shift+Enter inserts a
+  newline — don't rewire this to a submit-on-blur or button-only pattern without
+  reason, it matches standard chat-UI expectations.
+- **Not yet built**: `loading-indicator`, `error-banner` (still a bare text line
+  in `page.tsx`), markdown-rendering decision.
 - State is a `messages: Message[]` list from the start (append, never replace),
   even though every turn is currently independent — this anticipates multi-turn
   history (see Roadmap) without a later rewrite.
 - Error banner should branch on `error` field (`quota_exhausted` vs
-  `llm_provider_error`), not just display `message` generically.
+  `llm_provider_error`), not just display `message` generically — not built yet,
+  but this is the contract to build it against.
+- `frontend/next.config.ts` proxies `/api/*` → `http://localhost:8000/*`
+  (`rewrites()`). This exists because `main.py` has no `CORSMiddleware` — the
+  proxy sidesteps CORS entirely rather than adding it backend-side. Frontend
+  code calls `/api/query`, never `http://localhost:8000/query` directly.
+- Backend must be started via `backend/run.sh`, not a bare `uvicorn` command —
+  it sets `--timeout-keep-alive 75` (uvicorn's 5s default caused intermittent
+  ECONNRESET on the proxy↔backend connection after idling between chat turns).
 
 ## Roadmap (not yet built — don't implement early)
 
