@@ -21,11 +21,31 @@ Note this does NOT solve the underlying cost problem if you pick a paid
 provider -- Anthropic's API has no ongoing free tier, only a one-time ~$5
 signup credit, so switching to it doesn't give you a second daily free
 quota, just a different (paid, after credits) way to hit the same wall.
+
+Provider-side errors (rate limits, auth failures, etc.) are normalized into
+QuotaExhaustedError / LLMProviderError here, at the same layer that already
+hides which provider is active -- so callers (main.py) never need to import
+a provider-specific exception type just to handle failures.
 """
 
 import os
 from abc import ABC, abstractmethod
 from backend.app.retrieval.retriever import retrieve
+
+
+class QuotaExhaustedError(Exception):
+    """Raised when the active LLM provider's rate/quota limit is hit."""
+    def __init__(self, provider: str, message: str):
+        self.provider = provider
+        super().__init__(message)
+
+
+class LLMProviderError(Exception):
+    """Raised for any other LLM provider-side failure."""
+    def __init__(self, provider: str, message: str):
+        self.provider = provider
+        super().__init__(message)
+
 
 class LLMClient(ABC):
     @abstractmethod
@@ -40,33 +60,46 @@ class GeminiLLM(LLMClient):
         self.model = model
 
     def generate(self, prompt: str, system_instruction: str, temperature: float = 0.1) -> str:
-        from google.genai import types
-        response = self.client.models.generate_content(
-            model=self.model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                temperature=temperature,
-            ),
-        )
-        return response.text
+        from google.genai import types, errors as genai_errors
+        try:
+            response = self.client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=temperature,
+                ),
+            )
+            return response.text
+        except genai_errors.APIError as e:
+            if e.code == 429:
+                raise QuotaExhaustedError("gemini", str(e)) from e
+            raise LLMProviderError("gemini", str(e)) from e
 
 
 class AnthropicLLM(LLMClient):
-    def __init__(self, model: str = "claude-sonnet-4-6"):
+    def __init__(self, model: str = "claude-haiku-4-5-20251001"):
         import anthropic
         self.client = anthropic.Anthropic()  # reads ANTHROPIC_API_KEY from environment
         self.model = model
 
     def generate(self, prompt: str, system_instruction: str, temperature: float = 0.1) -> str:
-        response = self.client.messages.create(
-            model=self.model,
-            max_tokens=1024,
-            temperature=temperature,
-            system=system_instruction,
-            messages=[{"role": "user", "content": prompt}],
-        )
-        return response.content[0].text
+        import anthropic
+        try:
+            response = self.client.messages.create(
+                model=self.model,
+                max_tokens=1024,
+                temperature=temperature,
+                system=system_instruction,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return response.content[0].text
+        except anthropic.RateLimitError as e:
+            # Must be caught before the broader APIError below --
+            # RateLimitError is a subclass of APIError, so the order matters.
+            raise QuotaExhaustedError("anthropic", str(e)) from e
+        except anthropic.APIError as e:
+            raise LLMProviderError("anthropic", str(e)) from e
 
 
 def get_llm(name: str | None = None) -> LLMClient:

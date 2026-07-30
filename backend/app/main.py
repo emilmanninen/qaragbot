@@ -1,12 +1,11 @@
 import os
 import psycopg
+import re
 from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
-from backend.app.generation.generator import generate_answer
-from google.genai import errors as genai_errors
-import re
+from backend.app.generation.generator import generate_answer, QuotaExhaustedError, LLMProviderError
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
@@ -61,25 +60,24 @@ def parse_citations(answer: str, sources: list[dict]) -> dict[str, Citation]:
 def query(request: QueryRequest) -> QueryResponse:
     try:
         answer, sources = generate_answer(request.question)
-    except genai_errors.APIError as e:
-        if e.code == 429:
-            raise HTTPException(
-                status_code=503,
-                detail={
-                    "error": "quota_exhausted",
-                    "provider": "gemini",
-                    "message": "Gemini's free-tier daily quota has been used up. Try again later, or switch LLM_PROVIDER in .env.",
-                },
-            )
-        else:
-            raise HTTPException(
-                status_code=502,
-                detail={
-                    "error": "llm_provider_error",
-                    "provider": "gemini",
-                    "message": str(e),
-                },
-            )
+    except QuotaExhaustedError as e:
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "quota_exhausted",
+                "provider": e.provider,
+                "message": f"{e.provider}'s quota has been used up. Try again later, or switch LLM_PROVIDER in .env.",
+            },
+        )
+    except LLMProviderError as e:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "llm_provider_error",
+                "provider": e.provider,
+                "message": str(e),
+            },
+        )
 
     citations = parse_citations(answer, sources)
     return QueryResponse(answer=answer, citations=citations)
