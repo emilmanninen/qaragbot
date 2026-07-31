@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from backend.app.generation.generator import generate_answer, QuotaExhaustedError, LLMProviderError
+from backend.app.generation.condenser import condense_query
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
@@ -26,8 +27,13 @@ def health_check():
         raise HTTPException(status_code=503, detail=f"Database unreachable: {e}")
     return {"status": "ok", "db": "connected"}
 
+class Turn(BaseModel):
+    role: str  # "user" | "assistant"
+    content: str
+
 class QueryRequest(BaseModel):
     question: str = Field(min_length=1)
+    history: list[Turn] = Field(default_factory=list)
 
 class Citation(BaseModel):
     source_url: str
@@ -59,7 +65,9 @@ def parse_citations(answer: str, sources: list[dict]) -> dict[str, Citation]:
 @app.post("/query", response_model=QueryResponse)
 def query(request: QueryRequest) -> QueryResponse:
     try:
-        answer, sources = generate_answer(request.question)
+        history_dicts = [turn.model_dump() for turn in request.history]
+        standalone_question = condense_query(history_dicts, request.question)
+        answer, sources = generate_answer(standalone_question)
     except QuotaExhaustedError as e:
         raise HTTPException(
             status_code=503,
