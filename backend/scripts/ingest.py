@@ -11,6 +11,9 @@ that's Step 5. Re-running this script is safe: the unique constraint on
 duplicate rows rather than silently double-inserting, which is a deliberate
 choice — silent duplication would be a much harder bug to notice later than
 a loud constraint violation now.
+
+Chunking strategy is selected via CHUNKING_STRATEGY in .env (Step 7
+swappability layer) — see backend/app/ingestion/chunker.py.
 """
 
 import sys
@@ -19,7 +22,7 @@ from pathlib import Path
 from backend.app.db.models import Base, Chunk
 from backend.app.db.session import engine, get_session
 from backend.app.embeddings.embedder import MODEL_NAME, embed_texts
-from backend.app.ingestion.chunking import chunk_document
+from backend.app.ingestion.chunker import get_chunker
 from backend.app.ingestion.loaders import load_documents
 
 
@@ -28,8 +31,9 @@ def run_ingestion(documents_dir: Path) -> None:
     docs = load_documents(documents_dir)
     print(f"Loaded {len(docs)} documents")
 
-    print("Chunking...")
-    all_chunks = [chunk for doc in docs for chunk in chunk_document(doc)]
+    chunker = get_chunker()
+    print(f"Chunking via strategy '{chunker.name}'...")
+    all_chunks = [chunk for doc in docs for chunk in chunker.chunk(doc)]
     print(f"Produced {len(all_chunks)} chunks total")
 
     print(f"Embedding {len(all_chunks)} chunks via {MODEL_NAME} (input_type=document)...")
@@ -51,7 +55,7 @@ def run_ingestion(documents_dir: Path) -> None:
                 end_char=c.end_char,
                 source_url=c.source_url,
                 title=c.title,
-                chunking_strategy="fixed_v1",
+                chunking_strategy=chunker.name,
                 embedding_model=MODEL_NAME,
                 embedding=vector,
             )
