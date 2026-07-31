@@ -128,6 +128,9 @@ Rules:
 - Answer in Finnish, regardless of what language the question was asked in.
 - Excerpts may start or end mid-sentence (they are fixed-length chunks) -- use the content anyway,
   don't comment on the truncation itself.
+- Respond in plain prose only. Do not use markdown formatting -- no bold text (**), no bullet
+  points, no headers, no numbered lists. Write full sentences; if you need to convey multiple
+  related facts, connect them with words like "lisäksi" or "toisaalta" rather than a list.
 """
 
 
