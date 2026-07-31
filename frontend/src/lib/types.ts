@@ -6,4 +6,4 @@ export type Message = {
   citations?: Record<string, Citation>;
 };
 
-export type QueryError = { error: string; message: string };
+export type QueryError = { error: string; message: string; provider?: string };

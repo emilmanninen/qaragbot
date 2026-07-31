@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ChatInput } from "@/components/chat-input";
 import { MessageList } from "@/components/message-list";
+import { ErrorBanner } from "@/components/error-banner";
 import type { Message, QueryError } from "@/lib/types";
 
 type Status = "idle" | "loading" | "error";
@@ -51,11 +52,7 @@ export default function Home() {
       <main className="flex w-full max-w-3xl flex-1 flex-col px-4 py-8">
         <MessageList messages={messages} />
 
-        {status === "error" && error && (
-          <p className="pb-2 text-sm text-destructive">
-            [{error.error}] {error.message}
-          </p>
-        )}
+        {status === "error" && error && <ErrorBanner error={error} />}
 
         <ChatInput onSubmit={handleSubmit} disabled={status === "loading"} />
       </main>
