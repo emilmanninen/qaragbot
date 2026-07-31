@@ -14,6 +14,12 @@ export default function Home() {
   const [error, setError] = useState<QueryError | null>(null);
 
   async function handleSubmit(question: string) {
+    // Build history from messages BEFORE appending the new user message —
+    // setMessages is async, so this avoids stale/duplicated state.
+    // Only role/content are sent; citations (if present on assistant
+    // messages) are stripped since the backend's Turn model doesn't expect them.
+    const history = messages.map(({ role, content }) => ({ role, content }));
+
     setMessages((prev) => [...prev, { role: "user", content: question }]);
     setStatus("loading");
     setError(null);
@@ -22,7 +28,7 @@ export default function Home() {
       const res = await fetch("/api/query", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question, history }),
       });
 
       if (!res.ok) {
