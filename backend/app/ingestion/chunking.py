@@ -58,6 +58,8 @@ def chunk_text(
             break
 
         start = end - overlap
+        while start > 0 and not text[start].isspace():
+            start -= 1
 
     return chunks
 
