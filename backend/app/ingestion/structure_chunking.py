@@ -79,7 +79,7 @@ def _merge_small_sections(sections: list[str], min_chars: int) -> list[str]:
     merged: list[str] = []
     carry = ""
     for sec in sections:
-        combined = carry + sec if carry else sec
+        combined = (carry + "\n\n" + sec) if carry else sec
         if len(combined) < min_chars:
             carry = combined
             continue
@@ -87,7 +87,7 @@ def _merge_small_sections(sections: list[str], min_chars: int) -> list[str]:
         carry = ""
     if carry:
         if merged:
-            merged[-1] = merged[-1] + carry
+            merged[-1] = merged[-1] + "\n\n" + carry
         else:
             merged.append(carry)
     return merged
