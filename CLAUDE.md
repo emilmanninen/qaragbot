@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 This file gives Claude Code context for working in this repo. For full background,
-architecture, and scope-decision rationale, see `claudeprojectfile.md` in the Obsidian
+architecture, and scope-decision rationale, see `qabotproject.md` in the Obsidian
 vault (`Funprojects/QaRagBotKela/`) — read it before making structural suggestions.
 
 ## What this is
@@ -17,6 +17,11 @@ choice should have an articulable reason, including tradeoffs not picked.
 - DB/vector store: PostgreSQL + pgvector
 - Frontend: Next.js + shadcn/ui
 - LLM/embeddings: called directly via API, no LangChain/LlamaIndex
+- LLM provider: Anthropic (`claude-haiku-4-5-20251001`), switched from Gemini
+  after exhausting its free-tier quota. `GeminiLLM` still supported behind
+  `get_llm(name)`, just not the active provider.
+- Embedding model: Voyage AI `voyage-4`, 1024 dims — not swappable, deliberate
+  scope decision (see Hard constraints).
 - Environment: Windows + WSL (Ubuntu)
 
 ## Hard constraints — don't relitigate without a stated reason
@@ -26,36 +31,70 @@ choice should have an articulable reason, including tradeoffs not picked.
 - No multi-user / auth. Single-user local tool.
 - `chunking_strategy`, `embedding_model`, and LLM provider (gemini/anthropic) are
   server-side `.env` config, not request params or UI toggles. `get_llm(name)`
-  already supports an override if a toggle is added later — don't add one
-  speculatively.
+  and `get_chunker(name)` already support overrides for exactly this reason —
+  don't add a UI toggle speculatively.
+- Embedding-model swappability (`get_embedder(name)`) was considered and
+  deliberately cut, not forgotten — Voyage-4 was chosen for a specific, verified
+  reason (multilingual/Finnish strength), and a second swappable axis would add
+  re-embedding cost and schema complexity (incompatible vector dimensions across
+  models) without a concrete question to answer. Chunking-strategy swappability
+  (`get_chunker(name)`) is the one axis actually built — see below.
 - Sync handlers in FastAPI are deliberate (threadpool is sufficient at this scale),
   not a gap to "fix" to async.
+- `generate_answer` is deliberately history-blind (Option A) — only the condensed
+  question + retrieved chunks go into generation, no raw conversation history.
+  This is revisitable (an additive `raw_history=None` param would extend it) but
+  not a bug to silently "fix."
 
-## Current backend contract (Steps 0–5 complete)
+## Current backend contract (Steps 0–6 + multi-turn complete)
 
 `POST /query`
 
-Request: `{ question: string }` — no `history` field yet (see Roadmap).
+Request: `{ question: string, history?: Message[] }` — `history` is optional;
+omitted or empty means the question is treated as standalone (no condensation
+LLM call made). When present, `condense_query(history, question)` runs before
+retrieval to produce a standalone query.
 
 Response (success): `{ answer: string, citations: Record<string, Citation> }`
 where `Citation = { source_url: string, snippet: string }`, keyed by citation
 number as a string, containing **only** citation numbers actually referenced in
-the answer text (not all retrieved chunks).
+the answer text (not all retrieved chunks). Citations are per-turn — the
+generator does not see or cite chunks from earlier turns.
 
 Response (error):
-- `429` from LLM provider → `503 { error: "quota_exhausted", provider: "gemini", message: string }`
+- `429` from LLM provider → `503 { error: "quota_exhausted", provider: string, message: string }`
 - other provider errors → `502 { error: "llm_provider_error", message: string }`
+- Normalized exception classes (`QuotaExhaustedError`, `LLMProviderError`) isolate
+  provider SDK types from `main.py` — don't catch raw Gemini/Anthropic SDK
+  exceptions directly in route handlers.
 
 Answer text contains inline `[1]`, `[2]` style citation markers matched against
 the `citations` dict keys — these are not markdown links, they need manual
 parsing on the frontend, not a markdown-link renderer.
 
-## Frontend (Step 6, in progress)
+## Retrieval layer (`backend/app/retrieval/retriever.py`)
 
-Built with Claude Code. Working end-to-end against the real backend:
+- `embed_query(query) -> vector` and `search_by_vector(query_vec_literal,
+  chunking_strategy, k=5) -> rows` are separate functions — split during Step 9
+  so the eval harness can embed a question once and query multiple chunking
+  strategies against the same vector, instead of re-embedding per strategy.
+- `retrieve(query, k=5, chunking_strategy=CHUNKING_STRATEGY)` is a thin wrapper
+  calling both in sequence. Existing call sites (`generator.py`,
+  `scripts/retrieve.py`) are unaffected — `chunking_strategy` defaults to the
+  same module constant as before the split, so `retrieve(query)` behaves
+  identically to pre-Step-9 code.
+- `CHUNKING_STRATEGY` module constant currently `"fixed_v1"` — Step 10 will
+  decide whether this should change based on eval results (see below).
 
-- `chat-input`, `message-list`, `message-bubble`, `citation-badge` — all built.
-  `citation-badge` is shadcn Badge + Popover (**not** HoverCard, no hover on
+## Frontend (Step 6 complete, fully verified end-to-end)
+
+Built with Claude Code, working end-to-end against the real backend in both
+English and Finnish:
+
+- `chat-input`, `message-list`, `message-bubble`, `citation-badge`,
+  `error-banner` — all built and verified. `loading-indicator` is still a
+  placeholder — deliberately deferred, not forgotten.
+- `citation-badge` is shadcn Badge + Popover (**not** HoverCard, no hover on
   touch), composed via base-ui's `render` prop chained two levels deep
   (`PopoverTrigger` renders as `Badge`, `Badge` renders as a real `<button>`) —
   needed for base-ui's native-button a11y requirement, not decorative.
@@ -65,14 +104,12 @@ Built with Claude Code. Working end-to-end against the real backend:
 - `chat-input`: Enter submits (`form.requestSubmit()`), Shift+Enter inserts a
   newline — don't rewire this to a submit-on-blur or button-only pattern without
   reason, it matches standard chat-UI expectations.
-- **Not yet built**: `loading-indicator`, `error-banner` (still a bare text line
-  in `page.tsx`), markdown-rendering decision.
-- State is a `messages: Message[]` list from the start (append, never replace),
-  even though every turn is currently independent — this anticipates multi-turn
-  history (see Roadmap) without a later rewrite.
-- Error banner should branch on `error` field (`quota_exhausted` vs
-  `llm_provider_error`), not just display `message` generically — not built yet,
-  but this is the contract to build it against.
+- `error-banner` branches on the `error` field (`quota_exhausted` vs
+  `llm_provider_error`), not just displaying `message` generically.
+- State is `messages: Message[]`, append-only from the start — `page.tsx`'s
+  `handleSubmit` sends the accumulated list as `history` on every turn. This
+  was built in from day one, before multi-turn condensation existed backend-
+  side, specifically to avoid a later rewrite.
 - `frontend/next.config.ts` proxies `/api/*` → `http://localhost:8000/*`
   (`rewrites()`). This exists because `main.py` has no `CORSMiddleware` — the
   proxy sidesteps CORS entirely rather than adding it backend-side. Frontend
@@ -80,17 +117,90 @@ Built with Claude Code. Working end-to-end against the real backend:
 - Backend must be started via `backend/run.sh`, not a bare `uvicorn` command —
   it sets `--timeout-keep-alive 75` (uvicorn's 5s default caused intermittent
   ECONNRESET on the proxy↔backend connection after idling between chat turns).
+- **Not yet resolved**: markdown-rendering decision. Model outputs `**bold**`/
+  bullets without explicit prompting despite the "plain prose" scope decision —
+  unresolved whether to render markdown client-side or strip it in generation.
+
+## Multi-turn conversation (done)
+
+- `condense_query(history, question) -> string` in
+  `backend/app/generation/condenser.py`. Empty history returns the question
+  unchanged with no LLM call. Non-empty history rewrites the question as
+  standalone before it reaches `retrieve()`.
+- Tested against 5 adversarial cases (vague follow-up, already-standalone,
+  multi-hop reference, topic shift, ambiguous antecedent) via
+  `backend/scripts/test_condenser.py` before any endpoint/frontend wiring.
+- Known soft spot: the condenser's ambiguity-resolution rule (single-resolve to
+  most recently mentioned candidate) isn't strictly followed — it sometimes
+  merges multiple candidates into one query instead. Checked empirically, not
+  currently treated as a bug (the merged query has scored as well or better on
+  this corpus). Don't "fix" this without re-testing against the adversarial set.
+
+## Chunking strategy swappability (Step 7, done)
+
+Three strategies behind `get_chunker(name)`, config'd via `CHUNKING_STRATEGY`
+in `.env`, all ingested into the same `chunks` table tagged by
+`chunking_strategy`:
+
+- `fixed_v1` — naive fixed-size + overlap, 313 rows. Baseline.
+- `semantic_v1` — embedding-boundary chunking, 199 rows. Costs ~2x embedding
+  calls at ingestion (every sentence embedded once to decide boundaries).
+- `structure_v1` — markdown header-based chunking, 220 rows. Zero embedding
+  calls to decide boundaries, fully deterministic.
+
+Each was validated against 3 known hard-case docs (near-duplicate income tables,
+cohort-cutoff tables, nested exception conditions) — see `qabotproject.md` for
+full per-doc findings and bugs found/fixed during this work (a `chunk_text()`
+whitespace-snap bug affecting all strategies that fall back to it, and a
+missing-separator bug in `structure_v1`'s section-merge step).
+
+`get_chunker(name)` stays in the codebase regardless of which strategy becomes
+the eventual `.env` default — same posture as `get_llm()` keeping the unused
+`GeminiLLM` implementation around.
+
+## Eval harness (Steps 8–9, done)
+
+- `eval/eval_set.json` — 38 questions, ground truth = `source_url` (not chunk ID
+  or page — Kela docs have no pages). 29 neutral, 4 adversarial, 5 out-of-corpus.
+  `_meta.known_ground_truth_limitation.ids` flags 3 questions
+  (q030/q032/q033) that can only test doc-level retrieval, not intra-document
+  chunk discrimination, because two docs hold multiple cohort/year variants
+  under one shared `source_url`.
+- `eval/run_eval.py` — retrieval-only, no LLM calls. Embeds each question once,
+  queries all 3 chunking strategies against the same vector via
+  `search_by_vector()`, computes Recall@1/3/5/10 from one ordered top-10 result
+  sliced per k rather than re-queried. Out-of-corpus rows excluded from the
+  aggregate but still retrieved for diagnostic inspection (checking for
+  false-positive lexical-proximity hits).
+- **Key finding: Recall@3/5/10 converge to ~1.00 across all 3 strategies at this
+  corpus size (16 docs, 33 scored questions) and aren't a useful comparison
+  signal.** Recall@1 is where strategies differ: `fixed_v1` 0.88,
+  `semantic_v1`/`structure_v1` 0.94. Every miss behind these numbers was traced
+  to a specific mechanism (1 mislabeled ground truth fixed via widening
+  `match_type` to `"any"`; 1 ambiguous question phrasing, flagged not fixed;
+  2 genuine chunking-strategy differences — see `qabotproject.md`'s "Eval
+  harness results (Step 9)" section for the full per-question trace).
+- **Don't treat Recall@1 differences as necessarily production-relevant**:
+  `retrieve()`'s default `k=5`, and Recall@5 is 1.00 across all 3 strategies —
+  the generator sees 5 chunks regardless of which one ranks first among them.
 
 ## Roadmap (not yet built — don't implement early)
 
-- **Multi-turn conversation**: after the frontend works end-to-end on single-turn.
-  Adds a `condense_query(history, question) -> string` step (its own LLM call,
-  own module in `backend/app/generation/condenser.py`) run before retrieval.
-  Citations stay per-turn — do not accumulate a cross-turn chunk pool.
-- **Refactor for swappability** (`get_embedder(name)`, `get_llm(name)` behind
-  clean interfaces) — Step 7, post-MVP.
-- **Eval harness** (Recall@k, retrieval-only scope) — Steps 8–10, post-MVP.
-  Ground truth granularity is source_url, not page (Kela docs have no pages).
+- **Step 10 (next up)**: README table using Recall@1 as the headline metric
+  (not Recall@3/5/10, which are uninformative here) + `.env` `CHUNKING_STRATEGY`
+  production-default decision, with an honest note about the k=5
+  production-relevance caveat above.
+- **Frontend polish pass**: markdown-rendering decision (see above),
+  `loading-indicator` implementation.
+- **Live hosting (stretch goal)**: Vercel + Supabase-Neon/Render free tiers,
+  rate limiting, Gemini-only provider restriction for cost control — do not
+  deploy without both the provider restriction and rate limiting in place.
+- **Generation-quality eval** (faithfulness, LLM-as-judge): explicitly out of
+  current scope, not just unbuilt. Two known generation-layer limitations exist
+  from manual spot-checks (`eval/generation_spotchecks.md`) — parameterized
+  table lookups can cause an unnecessary refusal, and refusal confidence
+  differs by language on the same ambiguous question — neither is covered by
+  Recall@k and neither has a systematic eval yet.
 
 ## Working style
 
@@ -98,5 +208,10 @@ Built with Claude Code. Working end-to-end against the real backend:
   finished code — I want to defend decisions in interviews.
 - Walk through debugging reasoning step by step, don't jump to the answer.
 - Be direct about what's wrong or suboptimal.
+- Verify against raw data (actual retrieved chunks, actual output) before
+  trusting a plausible-sounding explanation or an aggregate metric — demonstrated
+  twice this project: a boundary-check script that was itself buggy, and a
+  uniform Recall@k "miss" across all 3 chunking strategies that turned out to be
+  a mislabeled eval question, not a retrieval bug.
 - I'm self-taught (~1 year in), no formal CS background, job hunting for junior
   frontend/backend/fullstack roles in Finland.
