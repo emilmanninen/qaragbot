@@ -99,6 +99,10 @@ English and Finnish:
   part of `messages` state, so it's never sent to the backend as fake history
   and stays visible through the whole conversation (deliberate, aesthetic —
   not just an empty-state placeholder).
+- The chat itself is wrapped in a bordered, rounded `bg-card` panel
+  (`page.tsx`'s `<main>`) with a shadow, floating over the page's plain
+  `bg-background` — reads as an "interface" sitting on the page rather than
+  filling the whole viewport edge-to-edge.
   `loading-indicator` renders as a three-dot bounce inside a bubble styled
   like an assistant reply (matches `message-bubble`'s muted/rounded look),
   appended by `message-list` when `page.tsx`'s `status === "loading"` — it
