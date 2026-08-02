@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 This file gives Claude Code context for working in this repo. For full background,
-architecture, and scope-decision rationale, see `qabotproject.md` in the Obsidian
+architecture, and scope-decision rationale, see `claudeprojectfile.md` in the Obsidian
 vault (`Funprojects/QaRagBotKela/`) — read it before making structural suggestions.
 
 ## What this is
@@ -92,8 +92,20 @@ Built with Claude Code, working end-to-end against the real backend in both
 English and Finnish:
 
 - `chat-input`, `message-list`, `message-bubble`, `citation-badge`,
-  `error-banner` — all built and verified. `loading-indicator` is still a
-  placeholder — deliberately deferred, not forgotten.
+  `error-banner`, `loading-indicator` — all built and verified.
+  `message-list` also always renders a static Finnish welcome bubble ("Hei!
+  Voit kysyä minulta Kelan korkeakouluajan tuista, kuten opintorahasta ja
+  opintolainasta.") pinned above the conversation — a local constant, not
+  part of `messages` state, so it's never sent to the backend as fake history
+  and stays visible through the whole conversation (deliberate, aesthetic —
+  not just an empty-state placeholder).
+  `loading-indicator` renders as a three-dot bounce inside a bubble styled
+  like an assistant reply (matches `message-bubble`'s muted/rounded look),
+  appended by `message-list` when `page.tsx`'s `status === "loading"` — it
+  occupies the spot the next assistant bubble will land in, not a separate
+  banner. Verified end-to-end with a real backend call (Playwright): dots
+  visible mid-request, gone once the answer bubble replaces them, no console
+  errors.
 - `citation-badge` is shadcn Badge + Popover (**not** HoverCard, no hover on
   touch), composed via base-ui's `render` prop chained two levels deep
   (`PopoverTrigger` renders as `Badge`, `Badge` renders as a real `<button>`) —
@@ -149,7 +161,7 @@ in `.env`, all ingested into the same `chunks` table tagged by
   calls to decide boundaries, fully deterministic.
 
 Each was validated against 3 known hard-case docs (near-duplicate income tables,
-cohort-cutoff tables, nested exception conditions) — see `qabotproject.md` for
+cohort-cutoff tables, nested exception conditions) — see `claudeprojectfile.md` for
 full per-doc findings and bugs found/fixed during this work (a `chunk_text()`
 whitespace-snap bug affecting all strategies that fall back to it, and a
 missing-separator bug in `structure_v1`'s section-merge step).
@@ -178,7 +190,7 @@ the eventual `.env` default — same posture as `get_llm()` keeping the unused
   `semantic_v1`/`structure_v1` 0.94. Every miss behind these numbers was traced
   to a specific mechanism (1 mislabeled ground truth fixed via widening
   `match_type` to `"any"`; 1 ambiguous question phrasing, flagged not fixed;
-  2 genuine chunking-strategy differences — see `qabotproject.md`'s "Eval
+  2 genuine chunking-strategy differences — see `claudeprojectfile.md`'s "Eval
   harness results (Step 9)" section for the full per-question trace).
 - **Don't treat Recall@1 differences as necessarily production-relevant**:
   `retrieve()`'s default `k=5`, and Recall@5 is 1.00 across all 3 strategies —
@@ -190,8 +202,8 @@ the eventual `.env` default — same posture as `get_llm()` keeping the unused
   (not Recall@3/5/10, which are uninformative here) + `.env` `CHUNKING_STRATEGY`
   production-default decision, with an honest note about the k=5
   production-relevance caveat above.
-- **Frontend polish pass**: markdown-rendering decision (see above),
-  `loading-indicator` implementation.
+- **Frontend polish pass**: markdown-rendering decision (see above).
+  `loading-indicator` is done — see Frontend section above.
 - **Live hosting (stretch goal)**: Vercel + Supabase-Neon/Render free tiers,
   rate limiting, Gemini-only provider restriction for cost control — do not
   deploy without both the provider restriction and rate limiting in place.

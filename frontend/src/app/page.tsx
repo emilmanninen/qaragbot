@@ -56,7 +56,7 @@ export default function Home() {
   return (
     <div className="flex flex-1 flex-col items-center bg-background">
       <main className="flex w-full max-w-3xl flex-1 flex-col px-4 py-8">
-        <MessageList messages={messages} />
+        <MessageList messages={messages} isLoading={status === "loading"} />
 
         {status === "error" && error && <ErrorBanner error={error} />}
 
