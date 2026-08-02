@@ -103,6 +103,28 @@ English and Finnish:
   (`page.tsx`'s `<main>`) with a shadow, floating over the page's plain
   `bg-background` — reads as an "interface" sitting on the page rather than
   filling the whole viewport edge-to-edge.
+- `nav-bar.tsx` (client component, `usePathname` for active-route
+  highlighting) renders in `layout.tsx` above `{children}`, so it's shared
+  across routes without a per-page remount. Two routes: `/` (chat) and
+  `/about` (`app/about/page.tsx`) — a static page mirroring the chat panel's
+  bordered/rounded/shadow styling for visual consistency. Content: a short
+  project description, a link to
+  `https://github.com/emilmanninen/qaragbot`, and a bordered notice box
+  flagging that the live demo may fail because it runs on Gemini's free
+  tier (20 requests/day cap) rather than a paid one — relevant once the
+  "Live hosting" roadmap item (Gemini-only provider restriction, see above)
+  ships.
+- **Chat state survives navigating to `/about` and back.** The App Router
+  unmounts a route segment's component on navigation, which would otherwise
+  wipe `messages`/`status` (they used to live in `app/page.tsx`). Fixed by
+  moving that state and all the chat UI into `components/chat-view.tsx`,
+  rendered from `components/app-shell.tsx` — a client component sitting in
+  `layout.tsx` *outside* the routed `{children}` tree, so it's never
+  unmounted by route changes. `app-shell.tsx` reads `usePathname()` and
+  toggles `ChatView` vs. `{children}` with a CSS `hidden` class rather than
+  conditional rendering — both stay mounted, only visibility changes.
+  `app/page.tsx` (the `/` route) is now intentionally an empty stub — real
+  chat content is rendered by the shell, not the route.
   `loading-indicator` renders as a three-dot bounce inside a bubble styled
   like an assistant reply (matches `message-bubble`'s muted/rounded look),
   appended by `message-list` when `page.tsx`'s `status === "loading"` — it
