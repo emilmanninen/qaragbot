@@ -1,26 +1,30 @@
 {
   "_meta": {
-    "description": "Eval set for RAG Document Q&A Bot, Step 8. Ground truth = source_url. Used by Step 9's Recall@k harness (retrieval-only, no LLM calls).",
-    "corpus_size": 16,
-    "categories": {
-      "neutral": "Built independently of chunker-specific findings from Step 7, to avoid biasing toward whichever strategy already looked good under manual inspection.",
-      "adversarial": "Deliberately targets known limitations #2, #5, #6 (retrieval-layer only) documented in qabotproject.md. Excludes limitations #1, #3, #4, #7 which are generation-layer, condenser-specific, or metadata-only and cannot be scored by a source_url-in-top-k check -- see generation_spotchecks.md for #1 and #4.",
-      "out_of_corpus": "Excluded from Recall@k aggregation (source_urls is empty, there is no correct chunk to find). Kept for manual generation-layer refusal spot-checks."
-    },
-    "match_type": {
-      "single": "Exactly one correct source_url.",
-      "any": "Multiple plausible source_urls; a hit on any one counts as retrieved.",
-      "all": "Multiple source_urls; every one must appear in top-k to count as a full hit.",
-      "null": "No correct source_url exists (out_of_corpus category) -- excluded from scoring."
-    }
+  "description": "Eval set for RAG Document Q&A Bot, Step 8. Ground truth = source_url. Used by Step 9's Recall@k harness (retrieval-only, no LLM calls).",
+  "corpus_size": 16,
+  "categories": {
+    "neutral": "Built independently of chunker-specific findings from Step 7, to avoid biasing toward whichever strategy already looked good under manual inspection.",
+    "adversarial": "Deliberately targets known limitations #2, #5, #6 (retrieval-layer only) documented in qabotproject.md. Excludes limitations #1, #3, #4, #7 which are generation-layer, condenser-specific, or metadata-only and cannot be scored by a source_url-in-top-k check -- see generation_spotchecks.md for #1 and #4.",
+    "out_of_corpus": "Excluded from Recall@k aggregation (source_urls is empty, there is no correct chunk to find). Kept for manual generation-layer refusal spot-checks."
   },
+  "match_type": {
+    "single": "Exactly one correct source_url.",
+    "any": "Multiple plausible source_urls; a hit on any one counts as retrieved.",
+    "all": "Multiple source_urls; every one must appear in top-k to count as a full hit.",
+    "null": "No correct source_url exists (out_of_corpus category) -- excluded from scoring."
+  },
+  "known_ground_truth_limitation": {
+    "ids": ["q030", "q032", "q033"],
+    "reason": "opintotukiaika_korkeakoulussa.md and tulojen_vaikutus_korkeakoulussa.md each hold all their cohort/year variants under one shared source_url. Recall@k can only confirm doc-level retrieval, not that the specific correct cohort/year chunk was retrieved -- that requires manual chunk-level inspection."
+  }
+},
   "questions": [
     { "id": "q001", "question": "Mitä tukia korkeakouluopiskelija voi saada Kelalta?", "source_urls": ["https://www.kela.fi/korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
     { "id": "q002", "question": "Kuinka paljon opintorahaa voi saada kuukaudessa?", "source_urls": ["https://www.kela.fi/opintoraha-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
     { "id": "q003", "question": "Miten opintolainan valtiontakaus haetaan?", "source_urls": ["https://www.kela.fi/opintolaina-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
     { "id": "q004", "question": "Kuinka monta tukikuukautta saa korkeakoulututkintoon?", "source_urls": ["https://www.kela.fi/opintotukiaika-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
     { "id": "q005", "question": "Saanko opintotukea, jos opiskelen kahta tutkintoa samaan aikaan?", "source_urls": ["https://www.kela.fi/jos-suoritat-useita-korkeakouluopintoja"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
-    { "id": "q006", "question": "Voiko opintotukiaikaa pidentää sairauden takia?", "source_urls": ["https://www.kela.fi/opintotukiajan-pidennys-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
+    { "id": "q006", "question": "Voiko opintotukiaikaa pidentää sairauden takia?", "source_urls": ["https://www.kela.fi/opintotukiajan-pidennys-korkeakoulussa", "https://www.kela.fi/sairastaminen-korkeakoulussa"], "match_type": "any", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "Originally single-URL; changed to any after Step 9 found all 3 chunking strategies independently ranked sairastaminen-korkeakoulussa first, not the original ground truth. Both docs legitimately answer this question -- sairastaminen explains the sick-leave-extends-things concept, opintotukiajan-pidennys covers the application procedure. Cross-strategy agreement (rank 1 identical across all three) was the signal this was a ground-truth issue, not a retrieval bug." },
     { "id": "q007", "question": "Kuinka monta opintopistettä pitää suorittaa vuodessa, ettei opintotukea peritä takaisin?", "source_urls": ["https://www.kela.fi/opintojen-edistyminen-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },
     { "id": "q008", "question": "Paljonko saa ansaita opintotuen aikana ilman että se vaikuttaa tukeen?", "source_urls": ["https://www.kela.fi/tulojen-vaikutus-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "parameterized", "language": "fi", "notes": "Neutral phrasing of the income-limit question. Contrast with q030 (adversarial) which omits the support-month parameter deliberately." },
     { "id": "q009", "question": "Vaikuttaako vanhempieni tulot opintorahaani, jos asun yksin?", "source_urls": ["https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa"], "match_type": "single", "category": "neutral", "question_type": "factual", "language": "fi", "notes": "" },

@@ -2,7 +2,7 @@
 Retrieval logic: embed a query, run pgvector cosine similarity search.
 
 Used by scripts/retrieve.py (CLI sanity check), the generation layer
-(generator.py, via generate_answer), and eventually run_eval.py (Step 9).
+(generator.py, via generate_answer), and run_eval.py (Step 9).
 """
 
 from sqlalchemy import text
@@ -24,9 +24,12 @@ def vector_literal(embedding: list[float]) -> str:
     return "[" + ",".join(f"{x:.8f}" for x in embedding) + "]"
 
 
-def retrieve(query: str, k: int = 5):
-    query_vec_literal = vector_literal(embed_query(query))
-
+def search_by_vector(query_vec_literal: str, chunking_strategy: str, k: int = 5):
+    """
+    Runs the filtered similarity search against an already-embedded query vector.
+    Split out from retrieve() so callers that need the same query vector against
+    multiple chunking_strategy values (e.g. run_eval.py) don't re-embed per call.
+    """
     sql = text("""
         SELECT
             text,
@@ -45,9 +48,20 @@ def retrieve(query: str, k: int = 5):
             sql,
             {
                 "query_vec": query_vec_literal,
-                "strategy": CHUNKING_STRATEGY,
+                "strategy": chunking_strategy,
                 "model": MODEL_NAME,
                 "k": k,
             },
         )
         return result.fetchall()
+
+
+def retrieve(query: str, k: int = 5, chunking_strategy: str = CHUNKING_STRATEGY):
+    """
+    Embeds the query and runs a filtered similarity search in one call.
+    Unchanged default behavior for existing call sites (generator.py,
+    scripts/retrieve.py) — chunking_strategy defaults to the same module
+    constant as before this function was split.
+    """
+    query_vec_literal = vector_literal(embed_query(query))
+    return search_by_vector(query_vec_literal, chunking_strategy, k)

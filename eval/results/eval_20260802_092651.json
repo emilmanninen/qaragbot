@@ -1,0 +1,1122 @@
+{
+  "run_timestamp": "2026-08-02T09:26:51.029601+00:00",
+  "k_values": [
+    3,
+    5,
+    10
+  ],
+  "counts": {
+    "total": 38,
+    "scored": 33,
+    "out_of_corpus": 5,
+    "ground_truth_limited": 3
+  },
+  "aggregate": {
+    "fixed_v1": {
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    },
+    "semantic_v1": {
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    },
+    "structure_v1": {
+      "recall@3": 0.9696969696969697,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    }
+  },
+  "aggregate_excluding_ground_truth_limited": {
+    "fixed_v1": {
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    },
+    "semantic_v1": {
+      "recall@3": 1.0,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    },
+    "structure_v1": {
+      "recall@3": 0.9666666666666667,
+      "recall@5": 1.0,
+      "recall@10": 1.0
+    }
+  },
+  "by_category": {
+    "neutral": {
+      "fixed_v1": {
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      },
+      "semantic_v1": {
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      },
+      "structure_v1": {
+        "recall@3": 0.9655172413793104,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      }
+    },
+    "adversarial": {
+      "fixed_v1": {
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      },
+      "semantic_v1": {
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      },
+      "structure_v1": {
+        "recall@3": 1.0,
+        "recall@5": 1.0,
+        "recall@10": 1.0
+      }
+    }
+  },
+  "ground_truth_limited_detail": [
+    {
+      "id": "q030",
+      "question": "Kuinka monta tukikuukautta saan, jos aloitin opintoni syksyll\u00e4 2020?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q032",
+      "question": "Jos aloitin opintoni 1.8.2015 ja suoritan sek\u00e4 alempaa (180 op) ett\u00e4 ylemp\u00e4\u00e4 (120 op) korkeakoulututkintoa, kuinka monta tukikuukautta minulla on yhteens\u00e4 k\u00e4yt\u00f6ss\u00e4?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q033",
+      "question": "Mik\u00e4 oli tulojen yl\u00e4raja opintotuessa vuonna 2023?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    }
+  ],
+  "out_of_corpus_diagnostic": [
+    {
+      "id": "q034",
+      "question": "Voitko laskea, paljonko opintotukea saisin, jos tienaan 800 euroa kuukaudessa?",
+      "per_strategy": {
+        "fixed_v1": {
+          "top_urls": [
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintolaina-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa"
+          ]
+        },
+        "semantic_v1": {
+          "top_urls": [
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/korkeakoulussa",
+            "https://www.kela.fi/opintolaina-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa"
+          ]
+        },
+        "structure_v1": {
+          "top_urls": [
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/opintolaina-korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opinnot-ulkomailla"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q035",
+      "question": "Miten haen yleist\u00e4 asumistukea, jos en ole opiskelija?",
+      "per_strategy": {
+        "fixed_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa"
+          ]
+        },
+        "semantic_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu"
+          ]
+        },
+        "structure_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q036",
+      "question": "How do I apply for unemployment benefit after graduating?",
+      "per_strategy": {
+        "fixed_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotukiajan-pidennys-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/opintotukiaika-korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu",
+            "https://www.kela.fi/opintojen-edistyminen-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa"
+          ]
+        },
+        "semantic_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/opintojen-edistyminen-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opinnot-ulkomailla",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu"
+          ]
+        },
+        "structure_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/korkeakoulussa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu",
+            "https://www.kela.fi/opintojen-edistyminen-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q037",
+      "question": "Miten haen lapsilis\u00e4\u00e4 lapselleni?",
+      "per_strategy": {
+        "fixed_v1": {
+          "top_urls": [
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa"
+          ]
+        },
+        "semantic_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/sairastaminen-korkeakoulussa"
+          ]
+        },
+        "structure_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/sairastaminen-korkeakoulussa",
+            "https://www.kela.fi/vanhempien-tulojen-vaikutus-korkeakoulussa"
+          ]
+        }
+      }
+    },
+    {
+      "id": "q038",
+      "question": "What is Kela's basic unemployment allowance amount per month?",
+      "per_strategy": {
+        "fixed_v1": {
+          "top_urls": [
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa"
+          ]
+        },
+        "semantic_v1": {
+          "top_urls": [
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu"
+          ]
+        },
+        "structure_v1": {
+          "top_urls": [
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintotuki-asumislisa",
+            "https://www.kela.fi/opintoraha-korkeakoulussa",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opiskelu-jos-elamantilanteesi-muuttuu",
+            "https://www.kela.fi/tulojen-vaikutus-korkeakoulussa",
+            "https://www.kela.fi/opinnot-ulkomailla",
+            "https://www.kela.fi/terveydenhoitomaksu"
+          ]
+        }
+      }
+    }
+  ],
+  "per_question": [
+    {
+      "id": "q001",
+      "question": "Mit\u00e4 tukia korkeakouluopiskelija voi saada Kelalta?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q002",
+      "question": "Kuinka paljon opintorahaa voi saada kuukaudessa?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q003",
+      "question": "Miten opintolainan valtiontakaus haetaan?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q004",
+      "question": "Kuinka monta tukikuukautta saa korkeakoulututkintoon?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q005",
+      "question": "Saanko opintotukea, jos opiskelen kahta tutkintoa samaan aikaan?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q006",
+      "question": "Voiko opintotukiaikaa pident\u00e4\u00e4 sairauden takia?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": false,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q007",
+      "question": "Kuinka monta opintopistett\u00e4 pit\u00e4\u00e4 suorittaa vuodessa, ettei opintotukea perit\u00e4 takaisin?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q008",
+      "question": "Paljonko saa ansaita opintotuen aikana ilman ett\u00e4 se vaikuttaa tukeen?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q009",
+      "question": "Vaikuttaako vanhempieni tulot opintorahaani, jos asun yksin?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q010",
+      "question": "Miten peruutan hakemani opintotuen?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q011",
+      "question": "Mit\u00e4 tapahtuu opintotuelle, jos sairastun kesken lukukauden?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q012",
+      "question": "Kuka maksaa YTHS:n terveydenhoitomaksun?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q013",
+      "question": "Kuinka paljon ateriatuki alentaa opiskelijaruokailun hintaa?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q014",
+      "question": "Kuinka paljon asumislis\u00e4\u00e4 voi saada kuukaudessa?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q015",
+      "question": "Pit\u00e4\u00e4k\u00f6 Kelalle ilmoittaa, jos muutan toiseen kaupunkiin kesken lukukauden?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q016",
+      "question": "Voiko opintotukea saada vaihto-opiskeluun ulkomailla?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q017",
+      "question": "Lasketaanko opintotuen tulorajassa vuositulot vai kuukausitulot?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q018",
+      "question": "Vaikuttaako tutkinnon laajuus siihen, kuinka monta tukikuukautta saan?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q019",
+      "question": "Voiko asumislis\u00e4\u00e4 saada, jos asuu soluasunnossa?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q020",
+      "question": "Miss\u00e4 tilanteissa vanhempien tulot vaikuttavat opintorahaan?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q021",
+      "question": "Milloin opintoraha maksetaan tilille?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q022",
+      "question": "Voiko opintolainaa nostaa useammassa er\u00e4ss\u00e4?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q023",
+      "question": "What financial support can a university student get from Kela?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q024",
+      "question": "How many months of student financial aid can I get for a bachelor's degree?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q025",
+      "question": "How much can I earn without it affecting my student financial aid?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q026",
+      "question": "Do my parents' income affect my study grant if I live alone?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q027",
+      "question": "How much housing supplement can I get per month?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q028",
+      "question": "Can I get student financial aid for an exchange semester abroad?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q029",
+      "question": "Can I withdraw my study loan in several installments?",
+      "category": "neutral",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q030",
+      "question": "Kuinka monta tukikuukautta saan, jos aloitin opintoni syksyll\u00e4 2020?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q031",
+      "question": "Voinko saada asumislis\u00e4\u00e4, jos vuokraan asunnon vanhemmiltani?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q032",
+      "question": "Jos aloitin opintoni 1.8.2015 ja suoritan sek\u00e4 alempaa (180 op) ett\u00e4 ylemp\u00e4\u00e4 (120 op) korkeakoulututkintoa, kuinka monta tukikuukautta minulla on yhteens\u00e4 k\u00e4yt\u00f6ss\u00e4?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    },
+    {
+      "id": "q033",
+      "question": "Mik\u00e4 oli tulojen yl\u00e4raja opintotuessa vuonna 2023?",
+      "category": "adversarial",
+      "results": {
+        "fixed_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "semantic_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        },
+        "structure_v1": {
+          "3": true,
+          "5": true,
+          "10": true
+        }
+      }
+    }
+  ]
+}
