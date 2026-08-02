@@ -83,8 +83,14 @@ parsing on the frontend, not a markdown-link renderer.
   `scripts/retrieve.py`) are unaffected — `chunking_strategy` defaults to the
   same module constant as before the split, so `retrieve(query)` behaves
   identically to pre-Step-9 code.
-- `CHUNKING_STRATEGY` module constant currently `"fixed_v1"` — Step 10 will
-  decide whether this should change based on eval results (see below).
+- `CHUNKING_STRATEGY` module constant now reads `os.environ.get("CHUNKING_STRATEGY",
+  "fixed_v1")`, mirroring `get_chunker()`'s pattern in `chunker.py`. **Bug found
+  and fixed**: it used to be a hardcoded `"fixed_v1"` literal, completely
+  ignoring `.env` — so setting `CHUNKING_STRATEGY=structure_v1` in `.env`
+  silently had no effect on retrieval (ingestion via `get_chunker()` respected
+  it correctly; only the retrieval path didn't). Active strategy is now
+  `structure_v1`, matching `.env` and confirmed against a live `/query` call
+  and a direct import check.
 
 ## Frontend (Step 6 complete, fully verified end-to-end)
 
@@ -224,10 +230,12 @@ the eventual `.env` default — same posture as `get_llm()` keeping the unused
 
 ## Roadmap (not yet built — don't implement early)
 
-- **Step 10 (next up)**: README table using Recall@1 as the headline metric
-  (not Recall@3/5/10, which are uninformative here) + `.env` `CHUNKING_STRATEGY`
-  production-default decision, with an honest note about the k=5
-  production-relevance caveat above.
+- **Step 10 (partially done)**: `.env` `CHUNKING_STRATEGY` production-default
+  decision is made — `structure_v1` (also surfaced and fixed a retrieval-layer
+  bug where this setting was silently ignored, see Retrieval layer section
+  above). Still open: README table using Recall@1 as the headline metric (not
+  Recall@3/5/10, which are uninformative here), with an honest note about the
+  k=5 production-relevance caveat above.
 - **Frontend polish pass**: markdown-rendering decision (see above).
   `loading-indicator` is done — see Frontend section above.
 - **Live hosting (stretch goal)**: Vercel + Supabase-Neon/Render free tiers,

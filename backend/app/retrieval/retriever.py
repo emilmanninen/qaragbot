@@ -5,12 +5,16 @@ Used by scripts/retrieve.py (CLI sanity check), the generation layer
 (generator.py, via generate_answer), and run_eval.py (Step 9).
 """
 
+import os
+
 from sqlalchemy import text
 
 from backend.app.db.session import engine
 from backend.app.embeddings.embedder import MODEL_NAME, embed_texts
 
-CHUNKING_STRATEGY = "fixed_v1"  # matches the default in Chunk.chunking_strategy
+# Mirrors get_chunker()'s pattern (chunker.py) — same CHUNKING_STRATEGY .env
+# var picks the chunking strategy at both ingestion and retrieval time.
+CHUNKING_STRATEGY = os.environ.get("CHUNKING_STRATEGY", "fixed_v1")
 
 
 def embed_query(query: str) -> list[float]:
