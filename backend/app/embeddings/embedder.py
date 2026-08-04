@@ -42,6 +42,21 @@ MAX_TOKENS_PER_RUN = 1_000_000
 _client: voyageai.Client | None = None
 
 
+class EmbeddingProviderError(Exception):
+    """
+    Raised for any Voyage AI SDK failure (auth, rate limit, network,
+    malformed request, etc.), wrapping the original error message.
+
+    Same normalization role as QuotaExhaustedError/LLMProviderError in
+    generator.py -- callers (main.py) shouldn't need to import
+    voyageai.error types just to handle a failure. No `provider` field
+    like those two carry, though: embedding-model swappability was a
+    deliberately cut scope decision (see CLAUDE.md), so unlike the LLM
+    side there's only ever one provider here to name.
+    """
+    pass
+
+
 def _get_client() -> voyageai.Client:
     global _client
     if _client is None:
@@ -53,7 +68,10 @@ def _get_client() -> voyageai.Client:
 def _check_token_budget(texts: list[str]) -> None:
     """Abort before sending anything if the total token count looks like an accident."""
     client = _get_client()
-    total_tokens = client.count_tokens(texts, model=MODEL_NAME)
+    try:
+        total_tokens = client.count_tokens(texts, model=MODEL_NAME)
+    except voyageai.error.VoyageError as e:
+        raise EmbeddingProviderError(str(e)) from e
     if total_tokens > MAX_TOKENS_PER_RUN:
         raise RuntimeError(
             f"Refusing to embed {total_tokens:,} tokens in one run "
@@ -75,12 +93,15 @@ def embed_texts(
 
     for i in range(0, len(texts), BATCH_SIZE):
         batch = texts[i : i + BATCH_SIZE]
-        result = client.embed(
-            texts=batch,
-            model=MODEL_NAME,
-            input_type=input_type,
-            output_dimension=OUTPUT_DIMENSION,
-        )
+        try:
+            result = client.embed(
+                texts=batch,
+                model=MODEL_NAME,
+                input_type=input_type,
+                output_dimension=OUTPUT_DIMENSION,
+            )
+        except voyageai.error.VoyageError as e:
+            raise EmbeddingProviderError(str(e)) from e
         all_embeddings.extend(result.embeddings)
 
     return all_embeddings

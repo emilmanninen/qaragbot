@@ -1,20 +1,22 @@
 import os
 import psycopg
 import re
+import time
+from collections import defaultdict
 from pathlib import Path
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 from backend.app.generation.generator import generate_answer, QuotaExhaustedError, LLMProviderError
 from backend.app.generation.condenser import condense_query
+from backend.app.embeddings.embedder import EmbeddingProviderError
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
 app = FastAPI()
 
-DB_DSN = (
-    f"postgresql://{os.environ['POSTGRES_USER']}:{os.environ['POSTGRES_PASSWORD']}"
-    f"@localhost:5432/{os.environ['POSTGRES_DB']}"
+DB_DSN = os.environ.get(
+    "DATABASE_URL", "postgresql://raguser:1234@localhost:5432/ragdocqa"
 )
 
 @app.get("/health")
@@ -43,6 +45,43 @@ class QueryResponse(BaseModel):
     answer: str
     citations: dict[str, Citation]
 
+# Hard cap on question length, checked before any retrieval/LLM work runs --
+# guards against someone pasting in a huge blob and burning embedding/LLM
+# tokens on it, not a meaningful UX limit (no legitimate question is anywhere
+# near this long).
+MAX_QUESTION_LENGTH = 500
+
+# Minimal in-memory per-IP rate limiter, demo-scale only: a plain dict that
+# lives for the process lifetime, resets on restart, and isn't shared across
+# instances -- fine for a single-service Render deploy, not a real limiter.
+# No external dependency (e.g. slowapi) since the requirement is simple
+# enough to hand-roll and this project already avoids adding frameworks for
+# things it can do itself (see CLAUDE.md's LangChain stance).
+RATE_LIMIT_MAX_REQUESTS = 20
+RATE_LIMIT_WINDOW_SECONDS = 60
+
+_request_log: dict[str, list[float]] = defaultdict(list)
+
+def check_rate_limit(client_ip: str) -> None:
+    """Sliding-window limiter: drop timestamps older than the window, then
+    check how many requests from this IP remain inside it."""
+    now = time.monotonic()
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
+    timestamps = _request_log[client_ip]
+    while timestamps and timestamps[0] < window_start:
+        timestamps.pop(0)
+
+    if len(timestamps) >= RATE_LIMIT_MAX_REQUESTS:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "rate_limited",
+                "message": f"Rate limit exceeded ({RATE_LIMIT_MAX_REQUESTS} requests per "
+                           f"{RATE_LIMIT_WINDOW_SECONDS}s). Try again shortly.",
+            },
+        )
+    timestamps.append(now)
+
 def parse_citations(answer: str, sources: list[dict]) -> dict[str, Citation]:
     cited_numbers = {int(n) for n in re.findall(r"\[(\d+)\]", answer)}
 
@@ -63,7 +102,19 @@ def parse_citations(answer: str, sources: list[dict]) -> dict[str, Citation]:
     return citations
 
 @app.post("/query", response_model=QueryResponse)
-def query(request: QueryRequest) -> QueryResponse:
+def query(request: QueryRequest, req: Request) -> QueryResponse:
+    client_ip = req.client.host if req.client else "unknown"
+    check_rate_limit(client_ip)
+
+    if len(request.question) > MAX_QUESTION_LENGTH:
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "question_too_long",
+                "message": f"Question exceeds the {MAX_QUESTION_LENGTH}-character limit.",
+            },
+        )
+
     try:
         history_dicts = [turn.model_dump() for turn in request.history]
         standalone_question = condense_query(history_dicts, request.question)
@@ -83,6 +134,15 @@ def query(request: QueryRequest) -> QueryResponse:
             detail={
                 "error": "llm_provider_error",
                 "provider": e.provider,
+                "message": str(e),
+            },
+        )
+    except EmbeddingProviderError as e:
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "embedding_provider_error",
+                "provider": "voyage",
                 "message": str(e),
             },
         )
