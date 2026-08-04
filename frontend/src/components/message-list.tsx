@@ -8,7 +8,7 @@ import { LoadingIndicator } from "@/components/loading-indicator";
 const WELCOME_MESSAGE: Message = {
   role: "assistant",
   content:
-    "Hei! Voit kysyä minulta Kelan korkeakouluajan tuista, kuten opintorahasta ja opintolainasta.",
+    "Hei! Voit kysyä minulta Kelan korkeakouluajan tuista, kuten opintorahasta ja opintolainasta. Huom: tämä on demoprojekti ilmaisella hostauksella, joten ensimmäinen vastaus voi kestää noin 30 sekuntia palvelimen herätessä.",
 };
 
 export function MessageList({
