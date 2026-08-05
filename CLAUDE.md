@@ -14,12 +14,18 @@ choice should have an articulable reason, including tradeoffs not picked.
 ## Stack
 
 - Backend: FastAPI (Python), sync `def` handlers (deliberate — see below)
-- DB/vector store: PostgreSQL + pgvector
+- DB/vector store: PostgreSQL + pgvector. Docker locally; Neon in production.
 - Frontend: Next.js + shadcn/ui
 - LLM/embeddings: called directly via API, no LangChain/LlamaIndex
-- LLM provider: Anthropic (`claude-haiku-4-5-20251001`), switched from Gemini
-  after exhausting its free-tier quota. `GeminiLLM` still supported behind
-  `get_llm(name)`, just not the active provider.
+- LLM provider: **flipped back to Gemini** (`gemini-flash-latest`) as the
+  `LLM_PROVIDER` default — this reverses the earlier switch to Anthropic.
+  Driven by live hosting: Gemini has an ongoing daily free tier, Anthropic
+  only a one-time signup credit then billed. `LLM_PROVIDER=anthropic` now
+  additionally requires `ALLOW_PAID_LLM=1` in the environment or `get_llm()`
+  raises — deploy environments never set it, so a stray/misconfigured
+  `LLM_PROVIDER=anthropic` fails loudly instead of silently billing. Use
+  Anthropic (`claude-haiku-4-5-20251001`) locally for faster dev iteration by
+  setting both `LLM_PROVIDER=anthropic` and `ALLOW_PAID_LLM=1`.
 - Embedding model: Voyage AI `voyage-4`, 1024 dims — not swappable, deliberate
   scope decision (see Hard constraints).
 - Environment: Windows + WSL (Ubuntu)
@@ -64,9 +70,14 @@ generator does not see or cite chunks from earlier turns.
 Response (error):
 - `429` from LLM provider → `503 { error: "quota_exhausted", provider: string, message: string }`
 - other provider errors → `502 { error: "llm_provider_error", message: string }`
-- Normalized exception classes (`QuotaExhaustedError`, `LLMProviderError`) isolate
-  provider SDK types from `main.py` — don't catch raw Gemini/Anthropic SDK
-  exceptions directly in route handlers.
+- Voyage embedding failures → `502 { error: "embedding_provider_error", provider: "voyage", message: string }`
+- question over `MAX_QUESTION_LENGTH` (500 chars) → `400 { error: "question_too_long", message: string }`,
+  checked before any retrieval/LLM work runs
+- per-IP rate limit exceeded → `429 { error: "rate_limited", message: string }` (see
+  "Live hosting" below — hand-rolled in-memory sliding window, not a library)
+- Normalized exception classes (`QuotaExhaustedError`, `LLMProviderError`,
+  `EmbeddingProviderError`) isolate provider SDK types from `main.py` — don't
+  catch raw Gemini/Anthropic/Voyage SDK exceptions directly in route handlers.
 
 Answer text contains inline `[1]`, `[2]` style citation markers matched against
 the `citations` dict keys — these are not markdown links, they need manual
@@ -101,10 +112,14 @@ English and Finnish:
   `error-banner`, `loading-indicator` — all built and verified.
   `message-list` also always renders a static Finnish welcome bubble ("Hei!
   Voit kysyä minulta Kelan korkeakouluajan tuista, kuten opintorahasta ja
-  opintolainasta.") pinned above the conversation — a local constant, not
-  part of `messages` state, so it's never sent to the backend as fake history
-  and stays visible through the whole conversation (deliberate, aesthetic —
-  not just an empty-state placeholder).
+  opintolainasta. Huom: tämä on demoprojekti ilmaisella hostauksella, joten
+  ensimmäinen vastaus voi kestää noin 30 sekuntia palvelimen herätessä.")
+  pinned above the conversation — a local constant, not part of `messages`
+  state, so it's never sent to the backend as fake history and stays visible
+  through the whole conversation (deliberate, aesthetic — not just an
+  empty-state placeholder). The cold-start warning sentence was added once
+  the app went live on free-tier hosting (Render's backend sleeps after
+  inactivity) — not present in earlier builds.
 - The chat itself is wrapped in a bordered, rounded `bg-card` panel
   (`page.tsx`'s `<main>`) with a shadow, floating over the page's plain
   `bg-background` — reads as an "interface" sitting on the page rather than
@@ -117,9 +132,8 @@ English and Finnish:
   project description, a link to
   `https://github.com/emilmanninen/qaragbot`, and a bordered notice box
   flagging that the live demo may fail because it runs on Gemini's free
-  tier (20 requests/day cap) rather than a paid one — relevant once the
-  "Live hosting" roadmap item (Gemini-only provider restriction, see above)
-  ships.
+  tier (20 requests/day cap) rather than a paid one — now live and accurate
+  (see "Live hosting" below, done).
 - **Chat state survives navigating to `/about` and back.** The App Router
   unmounts a route segment's component on navigation, which would otherwise
   wipe `messages`/`status` (they used to live in `app/page.tsx`). Fixed by
@@ -154,10 +168,13 @@ English and Finnish:
   `handleSubmit` sends the accumulated list as `history` on every turn. This
   was built in from day one, before multi-turn condensation existed backend-
   side, specifically to avoid a later rewrite.
-- `frontend/next.config.ts` proxies `/api/*` → `http://localhost:8000/*`
-  (`rewrites()`). This exists because `main.py` has no `CORSMiddleware` — the
-  proxy sidesteps CORS entirely rather than adding it backend-side. Frontend
-  code calls `/api/query`, never `http://localhost:8000/query` directly.
+- `frontend/next.config.ts` proxies `/api/*` → `${BACKEND_URL}/*`
+  (`rewrites()`), falling back to `http://localhost:8000` when `BACKEND_URL`
+  is unset. Made configurable for the Vercel → Render deploy (rewrite needs
+  to point at the production backend, not localhost). This exists because
+  `main.py` has no `CORSMiddleware` — the proxy sidesteps CORS entirely
+  rather than adding it backend-side. Frontend code calls `/api/query`,
+  never the backend URL directly.
 - Backend must be started via `backend/run.sh`, not a bare `uvicorn` command —
   it sets `--timeout-keep-alive 75` (uvicorn's 5s default caused intermittent
   ECONNRESET on the proxy↔backend connection after idling between chat turns).
@@ -199,8 +216,9 @@ whitespace-snap bug affecting all strategies that fall back to it, and a
 missing-separator bug in `structure_v1`'s section-merge step).
 
 `get_chunker(name)` stays in the codebase regardless of which strategy becomes
-the eventual `.env` default — same posture as `get_llm()` keeping the unused
-`GeminiLLM` implementation around.
+the eventual `.env` default — same posture as `get_llm()` keeping the
+non-default `AnthropicLLM` implementation around (gated behind
+`ALLOW_PAID_LLM`, see Stack section) rather than active by default.
 
 ## Eval harness (Steps 8–9, done)
 
@@ -228,19 +246,38 @@ the eventual `.env` default — same posture as `get_llm()` keeping the unused
   `retrieve()`'s default `k=5`, and Recall@5 is 1.00 across all 3 strategies —
   the generator sees 5 chunks regardless of which one ranks first among them.
 
+## Live hosting (done)
+
+Shipped: Vercel (frontend) + Render (backend) + Neon (DB), linked from
+README's "Live demo" section. Both guardrails the roadmap required before
+deploy are in place:
+
+- **Gemini-only provider restriction**: `LLM_PROVIDER=gemini` is the default,
+  and Anthropic is hard-gated behind `ALLOW_PAID_LLM=1` (see Stack section) —
+  Render's environment sets neither an Anthropic key nor that flag, so
+  there's no path to an accidental billed call in production.
+- **Rate limiting**: hand-rolled per-IP sliding window in `main.py`
+  (`check_rate_limit`) — 20 requests/60s, in-memory `dict[str, list[float]]`.
+  Explicitly demo-scale: resets on process restart, not shared across
+  instances. Accepted limitation at this traffic level, not a bug — matches
+  the project's "hand-roll it, don't reach for a framework" stance (no
+  `slowapi`).
+- `next.config.ts`'s `BACKEND_URL` env var (see Frontend section) is what
+  makes the Vercel→Render rewrite possible without hardcoding a host.
+- Cold-start UX: Render's free tier sleeps the backend after inactivity, so
+  the first request after idling can take ~30-60s. Surfaced to the user via
+  the welcome-message sentence (see Frontend section) rather than hidden.
+
 ## Roadmap (not yet built — don't implement early)
 
-- **Step 10 (partially done)**: `.env` `CHUNKING_STRATEGY` production-default
-  decision is made — `structure_v1` (also surfaced and fixed a retrieval-layer
-  bug where this setting was silently ignored, see Retrieval layer section
-  above). Still open: README table using Recall@1 as the headline metric (not
-  Recall@3/5/10, which are uninformative here), with an honest note about the
-  k=5 production-relevance caveat above.
-- **Frontend polish pass**: markdown-rendering decision (see above).
-  `loading-indicator` is done — see Frontend section above.
-- **Live hosting (stretch goal)**: Vercel + Supabase-Neon/Render free tiers,
-  rate limiting, Gemini-only provider restriction for cost control — do not
-  deploy without both the provider restriction and rate limiting in place.
+- **Step 10 (done)**: `.env` `CHUNKING_STRATEGY` production default is
+  `structure_v1` (also surfaced and fixed a retrieval-layer bug where this
+  setting was silently ignored, see Retrieval layer section above). README
+  now has the Recall@1-headline eval table with the k=5 production-relevance
+  caveat, plus Production notes and Known limitations sections — this closes
+  out Step 10.
+- **Frontend polish pass**: markdown-rendering decision (see Frontend
+  section) is the one item still open here. `loading-indicator` is done.
 - **Generation-quality eval** (faithfulness, LLM-as-judge): explicitly out of
   current scope, not just unbuilt. Two known generation-layer limitations exist
   from manual spot-checks (`eval/generation_spotchecks.md`) — parameterized
