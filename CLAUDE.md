@@ -4,6 +4,8 @@ This file gives Claude Code context for working in this repo. For full backgroun
 architecture, and scope-decision rationale, see `claudeprojectfile.md` in the Obsidian
 vault (`Funprojects/QaRagBotKela/`) — read it before making structural suggestions.
 
+@.claude/memory/MEMORY.md
+
 ## What this is
 
 A document Q&A chatbot using RAG, where answers cite sources back to specific
