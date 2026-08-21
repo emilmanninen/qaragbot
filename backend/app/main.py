@@ -63,7 +63,7 @@ MAX_QUESTION_LENGTH = 500
 # No external dependency (e.g. slowapi) since the requirement is simple
 # enough to hand-roll and this project already avoids adding frameworks for
 # things it can do itself (see CLAUDE.md's LangChain stance).
-RATE_LIMIT_MAX_REQUESTS = 20
+RATE_LIMIT_MAX_REQUESTS = 15
 RATE_LIMIT_WINDOW_SECONDS = 60
 
 _request_log: dict[str, list[float]] = defaultdict(list)
@@ -87,6 +87,38 @@ def check_rate_limit(client_ip: str) -> None:
             },
         )
     timestamps.append(now)
+
+# Global daily query cap, separate from the per-IP limiter above -- that one
+# throttles burst rate, this one caps total spend. Sized to stretch a fixed
+# $5 Anthropic budget (see CLAUDE.md's Stack section) rather than to stop
+# abuse. Same demo-scale caveats: in-memory, resets on process restart, not
+# shared across instances, and "day" just means whatever UTC calendar date it
+# is when a request lands -- not a rolling 24h window.
+DAILY_QUERY_LIMIT = 40
+
+_daily_query_count = 0
+_daily_query_date: str | None = None
+
+def check_daily_limit() -> None:
+    """Reset the counter on a UTC date change, then enforce the cap. Called
+    only once a request is actually about to reach the LLM -- rate-limited or
+    question-too-long requests never cost anything, so they shouldn't eat
+    into the budget."""
+    global _daily_query_count, _daily_query_date
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    if _daily_query_date != today:
+        _daily_query_date = today
+        _daily_query_count = 0
+
+    if _daily_query_count >= DAILY_QUERY_LIMIT:
+        raise HTTPException(
+            status_code=429,
+            detail={
+                "error": "daily_limit_reached",
+                "message": f"Daily query limit ({DAILY_QUERY_LIMIT}) reached. Try again tomorrow.",
+            },
+        )
+    _daily_query_count += 1
 
 def parse_citations(answer: str, sources: list[dict]) -> dict[str, Citation]:
     cited_numbers = {int(n) for n in re.findall(r"\[(\d+)\]", answer)}
@@ -120,6 +152,8 @@ def query(request: QueryRequest, req: Request) -> QueryResponse:
                 "message": f"Question exceeds the {MAX_QUESTION_LENGTH}-character limit.",
             },
         )
+
+    check_daily_limit()
 
     try:
         history_dicts = [turn.model_dump() for turn in request.history]
