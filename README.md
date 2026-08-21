@@ -262,4 +262,4 @@ python -m eval.run_eval
 MVP, multi-turn conversation, chunking-strategy swappability, eval set, and
 eval harness (Steps 0–9) are complete and verified. Frontend and backend are
 both live in production (Vercel / Render / Neon). This README is Step 10 —
-the last item before the project is considered done for portfolio purposes.<!-- test2 -->
+the last item before the project is considered done for portfolio purposes.
