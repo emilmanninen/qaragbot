@@ -22,7 +22,8 @@ export function CitationBadge({
           <Badge
             variant="secondary"
             render={<button type="button" />}
-            className="mx-0.5 -translate-y-0.5 cursor-pointer text-[0.65rem]"
+            aria-label={`Lähde ${index}: ${citation.snippet}`}
+            className="mx-0.5 h-6 min-w-6 -translate-y-0.5 cursor-pointer justify-center px-1.5"
           >
             [{index}]
           </Badge>
