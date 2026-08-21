@@ -5,7 +5,7 @@ metadata:
   type: project
 ---
 
-Snapshot as of 2026-08-21 (HEAD ddfa8ac). Re-check if `.github/workflows/ci.yml`,
+Snapshot as of 2026-08-21 (HEAD 24b923a). Re-check if `.github/workflows/ci.yml`,
 `pyproject.toml`, or `main`'s branch protection settings change.
 
 - **`main` is actually branch-protected**, not just described as such in `ci.yml`'s
