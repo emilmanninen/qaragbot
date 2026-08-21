@@ -77,6 +77,9 @@ Response (error):
   checked before any retrieval/LLM work runs
 - per-IP rate limit exceeded → `429 { error: "rate_limited", message: string }` (see
   "Live hosting" below — hand-rolled in-memory sliding window, not a library)
+- global daily query cap exceeded → `429 { error: "daily_limit_reached", message: string }`
+  (separate from the per-IP limiter — caps total spend, not burst rate; see
+  "Live hosting" below)
 - Normalized exception classes (`QuotaExhaustedError`, `LLMProviderError`,
   `EmbeddingProviderError`) isolate provider SDK types from `main.py` — don't
   catch raw Gemini/Anthropic/Voyage SDK exceptions directly in route handlers.
@@ -258,12 +261,22 @@ deploy are in place:
   and Anthropic is hard-gated behind `ALLOW_PAID_LLM=1` (see Stack section) —
   Render's environment sets neither an Anthropic key nor that flag, so
   there's no path to an accidental billed call in production.
-- **Rate limiting**: hand-rolled per-IP sliding window in `main.py`
-  (`check_rate_limit`) — 20 requests/60s, in-memory `dict[str, list[float]]`.
-  Explicitly demo-scale: resets on process restart, not shared across
-  instances. Accepted limitation at this traffic level, not a bug — matches
-  the project's "hand-roll it, don't reach for a framework" stance (no
-  `slowapi`).
+- **Rate limiting**: two independent hand-rolled in-memory guards in
+  `main.py`, added at different times for different reasons. `check_rate_limit`
+  is a per-IP sliding window (15 requests/60s, `dict[str, list[float]]`) that
+  throttles burst rate — original limit was 20, tightened to 15.
+  `check_daily_limit` is a *global* daily cap (`DAILY_QUERY_LIMIT = 40`,
+  reset on UTC date change) that caps total spend instead of burst rate —
+  added once a paid LLM provider entered the picture, since the per-IP
+  limiter alone doesn't bound total cost across many IPs or a full day of
+  traffic. Both are explicitly demo-scale: in-memory, reset on process
+  restart, not shared across instances. Because Render's free tier can
+  cold-start the backend multiple times in one day (see below), the daily
+  cap's real guarantee is closer to "40 per process lifetime" than "40 per
+  calendar day" — accepted as a known gap, not treated as a bug to silently
+  fix; the actual hard spend backstop is an Anthropic Console spend limit,
+  external to this app. Matches the project's "hand-roll it, don't reach for
+  a framework" stance (no `slowapi`).
 - `next.config.ts`'s `BACKEND_URL` env var (see Frontend section) is what
   makes the Vercel→Render rewrite possible without hardcoding a host.
 - Cold-start UX: Render's free tier sleeps the backend after inactivity, so
