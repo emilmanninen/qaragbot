@@ -1,12 +1,12 @@
 ---
 name: known-gaps
-description: Verified gaps and doc/code drift not documented in CLAUDE.md — condense_query's missing timeout guard, a dead config.py, and a stale README setup step.
+description: Verified gaps and doc/code drift not documented in CLAUDE.md — condense_query's missing timeout guard and a stale README setup step.
 metadata:
   type: project
 ---
 
 Snapshot as of 2026-08-21 (HEAD ddfa8ac). Re-check if `condenser.py`, `generator.py`,
-`db/session.py`, or `README.md`'s Setup section change.
+or `README.md`'s Setup section change.
 
 - **`condense_query()` bypasses the app-level LLM timeout.** `generator.py`'s module
   docstring says `generate_with_timeout()` "applies uniformly regardless of which
@@ -18,14 +18,6 @@ Snapshot as of 2026-08-21 (HEAD ddfa8ac). Re-check if `condenser.py`, `generator
   Provider-error normalization (`QuotaExhaustedError`/`LLMProviderError`) still works
   here since that happens inside `generate()` itself — only the timeout wrapper is
   skipped.
-
-- **`backend/app/config.py` is empty and has been since the Step 0 skeleton commit**
-  (`0707d54`, never touched since). Not dead by accident: `db/session.py`'s docstring
-  explains config was deliberately deferred ("No config.py exists yet... same 'don't
-  build the config layer before you need it' reasoning"). Every module reads its own
-  env vars directly (`os.environ.get(...)` in `retriever.py`, `chunker.py`,
-  `generator.py`, `session.py`) instead of a shared config module. Worth knowing before
-  assuming `config.py` holds anything, or before adding a new env var there by habit.
 
 - **README's Setup section references a `.env.example` that doesn't exist** in the
   repo (`cp .env.example .env` — no such file present). The three "still open"
