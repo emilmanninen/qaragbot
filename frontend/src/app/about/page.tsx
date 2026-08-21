@@ -10,7 +10,7 @@ export default function AboutPage() {
           project. It answers questions about Kela&apos;s Finnish
           higher-education benefits, such as study grants, student loans,
           and related support. Every answer cites the specific source
-          document it came from.
+          document it came from. Currently only available in Finnish.
         </p>
         <p className="mt-4 text-sm text-muted-foreground">
           For more information:{" "}
@@ -24,6 +24,23 @@ export default function AboutPage() {
           </a>
         </p>
         <div className="mt-6 rounded-lg border border-border bg-muted p-3 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">Disclaimer:</span>{" "}
+          this is an independent portfolio project, not an official Kela
+          product or financial/benefits advice. Always verify current
+          information directly at{" "}
+          <a
+            href="https://www.kela.fi"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground underline underline-offset-4 hover:text-primary"
+          >
+            kela.fi
+          </a>
+          . It is deliberately not production-ready for a domain where a
+          wrong answer has financial consequences — see the GitHub repo for
+          the scope decisions behind that.
+        </div>
+        <div className="mt-4 rounded-lg border border-border bg-muted p-3 text-sm text-muted-foreground">
           <span className="font-medium text-foreground">Note:</span>{" "}
           if the chatbot doesn&apos;t respond/errors, it&apos;s likely because this
           demo runs on the free Gemini API tier, capped at 20 requests/day,
