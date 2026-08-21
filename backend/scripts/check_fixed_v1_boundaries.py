@@ -9,8 +9,8 @@ position from the real word boundary.
 """
 from pathlib import Path
 
-from backend.app.db.session import get_session
 from backend.app.db.models import Chunk
+from backend.app.db.session import get_session
 from backend.app.ingestion.loaders import load_documents
 
 docs_by_id = {d.doc_id: d for d in load_documents(Path("documents"))}

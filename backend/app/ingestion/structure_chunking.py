@@ -43,7 +43,7 @@ import re
 
 from .chunking import Chunk, chunk_text
 from .loaders import LoadedDocument
-from .semantic_chunking import extract_tables, _reinsert_tables
+from .semantic_chunking import _reinsert_tables, extract_tables
 
 # matches a line that is a level-2 or level-3 markdown header (## or ###,
 # not #### or deeper, not a single #)

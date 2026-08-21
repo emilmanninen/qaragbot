@@ -1,0 +1,14 @@
+[tool.ruff]
+# backend/.venv isn't checked in, but exclude it defensively in case it's
+# ever run from a different venv location.
+extend-exclude = ["backend/.venv", "backend/dump.sql"]
+
+[tool.ruff.lint]
+# Ruff's own default set (E4/E7/E9 + F: pyflakes — unused imports/names,
+# undefined names, obvious errors) plus I: import-sort ordering. Deliberately
+# NOT the full "E" pycodestyle family, which includes E501 (line length) —
+# this codebase's docstrings and adversarial-test-case strings are
+# intentionally long-form prose, not something worth wrapping or flagging.
+# Not adding formatting (ruff format) either — that would rewrite every
+# file's whitespace in one commit, out of scope for "add CI".
+select = ["E4", "E7", "E9", "F", "I"]

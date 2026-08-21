@@ -9,8 +9,8 @@ from abc import ABC, abstractmethod
 
 from backend.app.embeddings.embedder import embed_texts
 
-from .loaders import LoadedDocument
 from .chunking import Chunk, chunk_document  # existing fixed-size logic, untouched
+from .loaders import LoadedDocument
 from .semantic_chunking import chunk_document_semantic  # untouched
 from .structure_chunking import chunk_document_structural  # untouched
 

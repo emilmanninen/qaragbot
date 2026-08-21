@@ -6,7 +6,10 @@ history, so retrieval has enough semantic signal to work with. Runs BEFORE
 retrieval. Does not see chunks, does not produce an answer, does not get citations.
 """
 
-from backend.app.generation.generator import get_llm, LLMProviderError, QuotaExhaustedError
+# Note: condense_query() doesn't catch/re-raise QuotaExhaustedError or
+# LLMProviderError itself -- they propagate unmodified from llm.generate()
+# below without needing to be named here. Only get_llm is actually used.
+from backend.app.generation.generator import get_llm
 
 CONDENSE_SYSTEM_INSTRUCTION = """You are rewriting a user's follow-up question so it can stand alone, without needing the earlier conversation to make sense.
 

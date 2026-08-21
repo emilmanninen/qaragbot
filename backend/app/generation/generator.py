@@ -53,7 +53,9 @@ provider is active.
 
 import os
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FutureTimeoutError
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FutureTimeoutError
+
 from backend.app.retrieval.retriever import retrieve
 
 # How long we'll wait for any single LLM call before giving up and raising
@@ -131,7 +133,8 @@ class GeminiLLM(LLMClient):
         self.model = model
 
     def generate(self, prompt: str, system_instruction: str, temperature: float = 0.1) -> str:
-        from google.genai import types, errors as genai_errors
+        from google.genai import errors as genai_errors
+        from google.genai import types
         try:
             response = self.client.models.generate_content(
                 model=self.model,

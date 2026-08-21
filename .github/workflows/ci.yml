@@ -1,0 +1,57 @@
+name: CI
+
+# Runs on every push and PR against main. This is deliberately CI only --
+# there's no deploy step here. Vercel and Render both auto-deploy from their
+# own GitHub integration on push to main, independent of this workflow.
+# What THIS workflow does is act as a required status check (see branch
+# protection on main) so a broken build/lint/regression can't land on main
+# and therefore can't trigger those auto-deploys in the first place.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      # next build also runs TypeScript's type-checker, so this one step
+      # catches build failures, type errors, and most import mistakes.
+      # No BACKEND_URL needed -- next.config.ts falls back to localhost,
+      # and rewrites() only matters at request time, not build time.
+      - run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r backend/requirements.txt
+      # ruff config lives in pyproject.toml. Installed via uv (no venv
+      # pollution, no separate requirements-dev.txt for a tool this small).
+      - uses: astral-sh/setup-uv@v3
+      - run: uvx ruff check backend/app backend/scripts
+      # Pure-logic regression test: confirms the fixed_v1 chunker refactor
+      # is byte-identical to the pre-refactor implementation. No DB, no API
+      # keys, fully deterministic -- safe to run on every push.
+      #
+      # Deliberately NOT run here: backend/scripts/test_condenser.py. It
+      # calls the live LLM for every case, and Gemini's free tier is a hard
+      # 20 requests/day cap shared with the live demo -- running it on every
+      # push would compete with or exhaust that quota. It stays a manual
+      # check (see CLAUDE.md), not a CI gate.
+      - run: python -m backend.scripts.diff_test_chunker
