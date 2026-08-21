@@ -1,6 +1,14 @@
 """
-Diff-test: confirm get_chunker() produces byte-identical output to the
-pre-refactor chunk_document() call, without touching embeddings or the DB.
+Diff-test: confirm FixedSizeChunker (get_chunker("fixed_v1")) produces
+byte-identical output to the pre-refactor chunk_document() call, without
+touching embeddings or the DB.
+
+Strategy is passed explicitly rather than via get_chunker()'s no-arg
+.env-driven default -- that default became structure_v1 in Step 10, and
+comparing THAT against the raw fixed_v1 chunk_document() would always
+mismatch on chunk count regardless of whether the fixed_v1 refactor itself
+is correct. This script's job is narrower: is the fixed_v1 wrapper class
+behavior-preserving, independent of whatever strategy happens to be active.
 """
 
 from pathlib import Path
@@ -11,7 +19,7 @@ from backend.app.ingestion.loaders import load_documents
 
 docs = load_documents(Path("documents"))
 
-chunker = get_chunker()  # reads CHUNKING_STRATEGY from .env
+chunker = get_chunker("fixed_v1")
 new_chunks = [c for doc in docs for c in chunker.chunk(doc)]
 old_chunks = [c for doc in docs for c in chunk_document(doc)]
 

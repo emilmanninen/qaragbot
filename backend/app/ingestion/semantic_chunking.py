@@ -276,6 +276,7 @@ if __name__ == "__main__":
     from pathlib import Path
 
     from backend.app.embeddings.embedder import embed_texts
+
     from .loaders import load_document
 
     def _embed_fn(texts: list[str]) -> list[list[float]]:

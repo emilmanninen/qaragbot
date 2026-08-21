@@ -8,6 +8,7 @@ Run from the repo root:
 """
 
 import argparse
+
 from backend.app.retrieval.retriever import retrieve
 
 DEFAULT_QUERY = "Kuinka paljon opintorahaa voi saada korkeakouluopiskelijana?"

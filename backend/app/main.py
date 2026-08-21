@@ -1,15 +1,21 @@
 import os
-import psycopg
 import re
 import time
 from collections import defaultdict
 from pathlib import Path
+
+import psycopg
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
-from backend.app.generation.generator import generate_answer, QuotaExhaustedError, LLMProviderError
-from backend.app.generation.condenser import condense_query
+
 from backend.app.embeddings.embedder import EmbeddingProviderError
+from backend.app.generation.condenser import condense_query
+from backend.app.generation.generator import (
+    LLMProviderError,
+    QuotaExhaustedError,
+    generate_answer,
+)
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
