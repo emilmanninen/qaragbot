@@ -1,23 +1,27 @@
 ---
 name: known-gaps
-description: Verified gaps and doc/code drift not documented in CLAUDE.md — condense_query's missing timeout guard and a stale README setup step.
+description: Verified gaps and doc/code drift not documented in CLAUDE.md — a stale README setup step. (condense_query's missing timeout guard, formerly listed here, was fixed — see below.)
 metadata:
   type: project
 ---
 
-Snapshot as of 2026-08-21 (HEAD ddfa8ac). Re-check if `condenser.py`, `generator.py`,
-or `README.md`'s Setup section change.
+Snapshot as of 2026-08-21 (HEAD 96054d4, plus an uncommitted local fix on top —
+see below). Re-check if `condenser.py`, `generator.py`, or `README.md`'s Setup
+section change.
 
-- **`condense_query()` bypasses the app-level LLM timeout.** `generator.py`'s module
-  docstring says `generate_with_timeout()` "applies uniformly regardless of which
-  provider is active" — true for `generate_answer()`, but `condenser.py:59` calls
-  `llm.generate()` directly, not `generate_with_timeout()`. A hung condensation call
-  (any multi-turn request, since `condense_query` only runs when `history` is
-  non-empty) has no app-level hard timeout — the exact failure mode
-  `generate_with_timeout()` was built to guard against is unprotected on this path.
-  Provider-error normalization (`QuotaExhaustedError`/`LLMProviderError`) still works
-  here since that happens inside `generate()` itself — only the timeout wrapper is
-  skipped.
+- **Fixed: `condense_query()` used to bypass the app-level LLM timeout.**
+  `condenser.py:59` called `llm.generate()` directly instead of
+  `llm.generate_with_timeout()`, so a hung condensation call (any multi-turn
+  request, since `condense_query` only runs when `history` is non-empty) had
+  no app-level hard timeout — the exact failure mode
+  `generate_with_timeout()` was built to guard against (see `generator.py`'s
+  module docstring) was unprotected on this path. Changed to call
+  `generate_with_timeout()`, matching `generate_answer()`'s existing path —
+  same exception classes propagate, so `main.py`'s error handling needed no
+  changes. Regression-tested in `backend/scripts/test_condenser.py`
+  (`test_timeout_wrapper_actually_fires`,
+  `test_condense_query_uses_timeout_guard` — the latter verified to fail
+  against the pre-fix code, confirming it actually catches the bug).
 
 - **README's Setup section references a `.env.example` that doesn't exist** in the
   repo (`cp .env.example .env` — no such file present). The three "still open"

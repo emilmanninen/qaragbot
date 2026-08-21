@@ -7,8 +7,9 @@ retrieval. Does not see chunks, does not produce an answer, does not get citatio
 """
 
 # Note: condense_query() doesn't catch/re-raise QuotaExhaustedError or
-# LLMProviderError itself -- they propagate unmodified from llm.generate()
-# below without needing to be named here. Only get_llm is actually used.
+# LLMProviderError itself -- they propagate unmodified from
+# llm.generate_with_timeout() below without needing to be named here.
+# Only get_llm is actually used.
 from backend.app.generation.generator import get_llm
 
 CONDENSE_SYSTEM_INSTRUCTION = """You are rewriting a user's follow-up question so it can stand alone, without needing the earlier conversation to make sense.
@@ -56,7 +57,13 @@ def condense_query(history: list[dict], question: str) -> str:
     llm = get_llm()
     prompt = build_condense_prompt(history, question)
 
-    condensed = llm.generate(
+    # generate_with_timeout(), not generate() -- this call used to bypass
+    # generator.py's app-level hard timeout entirely (see that module's
+    # docstring for why a raw generate() call can hang indefinitely on some
+    # provider SDK paths). condense_query runs on every multi-turn request,
+    # so a hang here blocked the whole request with no LLMProviderError to
+    # catch. Fixed; regression-tested in test_condenser.py.
+    condensed = llm.generate_with_timeout(
         system_instruction=CONDENSE_SYSTEM_INSTRUCTION,
         prompt=prompt,
     )
