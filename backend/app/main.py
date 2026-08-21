@@ -1,14 +1,15 @@
-import os
 import re
 import time
 from collections import defaultdict
 from pathlib import Path
 
-import psycopg
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 
+from backend.app.db.session import engine
 from backend.app.embeddings.embedder import EmbeddingProviderError
 from backend.app.generation.condenser import condense_query
 from backend.app.generation.generator import (
@@ -21,17 +22,12 @@ load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent.parent / ".env")
 
 app = FastAPI()
 
-DB_DSN = os.environ.get(
-    "DATABASE_URL", "postgresql://raguser:1234@localhost:5432/ragdocqa"
-)
-
 @app.get("/health")
 def health_check():
     try:
-        with psycopg.connect(DB_DSN, connect_timeout=3) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT 1;")
-    except psycopg.OperationalError as e:
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    except OperationalError as e:
         raise HTTPException(status_code=503, detail=f"Database unreachable: {e}")
     return {"status": "ok", "db": "connected"}
 

@@ -23,7 +23,7 @@ DATABASE_URL = os.environ.get(
     "DATABASE_URL", "postgresql+psycopg2://postgres:postgres@localhost:5432/ragdocqa"
 )
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, connect_args={"connect_timeout": 3})
 SessionLocal = sessionmaker(bind=engine)
 
 
