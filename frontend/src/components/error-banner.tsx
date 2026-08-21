@@ -5,6 +5,10 @@ const ERROR_COPY: Record<string, (err: QueryError) => string> = {
     `The AI service${err.provider ? ` (${err.provider})` : ""} is temporarily out of capacity. Please try again shortly.`,
   llm_provider_error: () =>
     "Something went wrong generating an answer. Please try again.",
+  rate_limited: () =>
+    "Too many requests in a short time. Please wait a bit and try again.",
+  daily_limit_reached: () =>
+    "This demo has hit its daily question limit. Please try again tomorrow.",
   network_error: () =>
     "Could not reach the server. Is the backend running?",
 };
