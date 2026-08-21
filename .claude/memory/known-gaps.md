@@ -1,13 +1,14 @@
 ---
 name: known-gaps
-description: Doc/code drift found and fixed in this project — condense_query's timeout guard and a missing .env.example. No open gaps as of this snapshot.
+description: Doc/code drift found in this project — two fixed items (condense_query's timeout guard, missing .env.example) and one currently open (CLAUDE.md's error contract missing daily_limit_reached).
 metadata:
   type: project
 ---
 
-Snapshot as of 2026-08-21. Both items below are fixed; kept as a record of what
-was found and how, plus a caution about trusting this file's own past state
-without re-checking it against current code.
+Snapshot as of 2026-08-21 (HEAD 24b923a). The first two items below are fixed;
+the third is currently open. Kept as a record of what was found and how, plus
+a caution about trusting this file's own past state without re-checking it
+against current code.
 
 - **Fixed: `condense_query()` used to bypass the app-level LLM timeout.**
   `condenser.py` called `llm.generate()` directly instead of
@@ -42,4 +43,12 @@ without re-checking it against current code.
   as a reminder to verify memory notes against current source, per
   CLAUDE.md's working-style section.
 
-Related: [[overview]].
+- **Open: CLAUDE.md's `POST /query` error-contract table is missing
+  `daily_limit_reached`.** Commit 24b923a added `check_daily_limit()` to
+  main.py, which can return `429 { error: "daily_limit_reached", message }` —
+  a new error shape not listed alongside the existing `rate_limited`,
+  `quota_exhausted`, etc. entries in CLAUDE.md's contract section. See
+  [[rate-limiting]] for what the new limiter does. Not fixed here since it's
+  a CLAUDE.md edit, outside this KB's scope.
+
+Related: [[overview]], [[rate-limiting]].
