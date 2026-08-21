@@ -5,12 +5,12 @@ metadata:
   type: project
 ---
 
-Snapshot as of 2026-08-17 (HEAD 45fb4c1). Re-check if `condenser.py`, `generator.py`,
+Snapshot as of 2026-08-21 (HEAD ddfa8ac). Re-check if `condenser.py`, `generator.py`,
 `db/session.py`, or `README.md`'s Setup section change.
 
 - **`condense_query()` bypasses the app-level LLM timeout.** `generator.py`'s module
   docstring says `generate_with_timeout()` "applies uniformly regardless of which
-  provider is active" — true for `generate_answer()`, but `condenser.py:56` calls
+  provider is active" — true for `generate_answer()`, but `condenser.py:59` calls
   `llm.generate()` directly, not `generate_with_timeout()`. A hung condensation call
   (any multi-turn request, since `condense_query` only runs when `history` is
   non-empty) has no app-level hard timeout — the exact failure mode
