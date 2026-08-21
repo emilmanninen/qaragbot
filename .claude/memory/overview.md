@@ -23,4 +23,4 @@ Repo layout:
 - `documents/` — the 16-doc Finnish corpus (markdown + YAML front matter).
 - `eval/` — retrieval-only eval harness + results.
 
-Related: [[known-gaps]].
+Related: [[known-gaps]], [[ci]].
