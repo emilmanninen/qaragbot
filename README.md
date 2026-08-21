@@ -213,8 +213,11 @@ it's "here's exactly where it doesn't yet, and how I know."
 git clone <repo-url>
 cd rag-docqa
 cp .env.example .env
-# fill in: DATABASE_URL, VOYAGE_API_KEY, LLM_PROVIDER (anthropic|gemini),
-# provider API key, CHUNKING_STRATEGY=structure_v1
+# .env.example already defaults to DATABASE_URL for the docker-compose DB,
+# LLM_PROVIDER=gemini, and CHUNKING_STRATEGY=structure_v1 -- only the API
+# keys are blank. Fill in: VOYAGE_API_KEY, and GEMINI_API_KEY (or
+# ANTHROPIC_API_KEY + ALLOW_PAID_LLM=1, if switching LLM_PROVIDER to
+# anthropic for local dev).
 ```
 
 ### 2. Start Postgres + pgvector
@@ -226,12 +229,20 @@ docker compose up -d
 ### 3. Backend
 
 ```bash
-python -m venv venv
-source venv/bin/activate
+python -m venv backend/.venv
+source backend/.venv/bin/activate
 pip install -r backend/requirements.txt
-python -m backend.scripts.ingest        # embeds & loads the corpus
-uvicorn backend.app.main:app --reload    # run from repo root
+python -m backend.scripts.ingest   # embeds & loads the corpus
+backend/run.sh                     # NOT a bare `uvicorn` command — sets
+                                    # --timeout-keep-alive 75, see below
 ```
+
+`run.sh` (not `uvicorn backend.app.main:app` directly) matters: uvicorn's
+5s default `--timeout-keep-alive` causes intermittent `ECONNRESET` on the
+frontend proxy↔backend connection after idling between chat turns. `run.sh`
+also `cd`s to the repo root and re-activates `backend/.venv` itself, so it
+works regardless of your shell's current directory — just make sure the
+venv above was created at that exact path first.
 
 ### 4. Frontend
 
