@@ -19,7 +19,12 @@ export function MessageList({
   isLoading?: boolean;
 }) {
   return (
-    <div className="flex flex-1 flex-col gap-3 overflow-y-auto py-4">
+    <div
+      role="log"
+      aria-live="polite"
+      aria-relevant="additions"
+      className="flex flex-1 flex-col gap-3 overflow-y-auto py-4"
+    >
       <MessageBubble message={WELCOME_MESSAGE} />
       {messages.map((message, i) => (
         <MessageBubble key={i} message={message} />
