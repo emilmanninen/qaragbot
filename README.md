@@ -249,14 +249,6 @@ npm run dev
 python -m eval.run_eval
 ```
 
-**Still open — need your input to lock these in:**
-1. Repo URL, and whether it's public yet.
-2. Exact `.env` variable names, if any differ from what's used above —
-   this session confirmed `DATABASE_URL` and `BACKEND_URL` specifically, but
-   I haven't verified the Gemini API key's exact env var name.
-3. Any DB migration step (e.g. Alembic) before `ingest.py`, or does ingest
-   create tables itself?
-
 ## Project status
 
 MVP, multi-turn conversation, chunking-strategy swappability, eval set, and
