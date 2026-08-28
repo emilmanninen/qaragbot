@@ -4,7 +4,7 @@ A document Q&A chatbot over Kela's Finnish student financial aid (Opintotuki)
 documentation, built with Retrieval-Augmented Generation (RAG). Answers cite
 the specific source page they came from.
 
-**Live demo:** https://qaragbot.vercel.app/
+**Live demo:** https://qaragbot.emilmanninen.com/
 
 > ⚠️ Hosted on free tiers. The backend sleeps after inactivity — the first
 > request can take ~30–60 seconds while it wakes up. The UI tells the user
